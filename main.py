@@ -1,6 +1,8 @@
 import argparse
 import numpy
 import cv2
+from numpy.core.fromnumeric import transpose
+from colorpick import getMainColor
 
 class ReadError(Exception):
     pass
@@ -21,6 +23,7 @@ class FrameMaker():
         self.black = black
         self.transpose = False
         self.isSquare = self.height == self.width
+        self.fp = fp
 
     def run(self):
 
@@ -55,6 +58,12 @@ class FrameMaker():
             sw = 0
 
         new_img[sh:sh+self.height, sw:sw+self.width] = self.img
+
+        if self.golden:
+            pickWidth = int(self.width // 5)
+            pickHeight = int((self.height*0.309)//5)
+            picker = getMainColor(self.fp,pickWidth,pickHeight)
+            new_img[new_width-pickHeight:new_width, sw:sw+pickWidth*5] = picker/255
 
         if self.transpose:
             new_img = new_img.transpose(1, 0, 2)
