@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frame Maker</title>
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-base-200 text-base-content min-h-screen overflow-hidden">
+    <div class="navbar bg-neutral text-neutral-content">
+        <h1 class="text-2xl">Frame Maker</h1>
+    </div>
+    <main class="p-8">
+        <section class="mb-4">
+            <div class="container mx-auto min-h-screen ">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="col-start-1">
+                        <div class="form-control">
+                            <input type="file" class="file-input file-input-bordered file-input-sm w-full max-w-xs"
+                                id="inputpath" />
+                        </div>
+                        <div class="flex p-4">
+                            <div class="flex items-center h-5">
+                                <input type="checkbox" id="golden" name="golden" class="checkbox checkbox-primary">
+                            </div>
+                            <div class="ms-2 text-sm">
+                                <label for="golden">Golden</label>
+                                <p class="text-xs text-base-content">上下左右の余白を黄金比にします</p>
+                            </div>
+                        </div>
+                        <div class="flex p-4">
+                            <div class="flex items-center h-5">
+                                <input type="checkbox" id="black" name="black" class="checkbox checkbox-primary">
+                                <div class="ms-2 text-sm">
+                                    <label class="label-text">Black</label>
+                                    <p class="text-xs text-base-content">フレームを黒にします</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex p-4">
+                            <div class="flex items-center h-5">
+                                <input type="checkbox" id="rounded" name="rounded" class="checkbox checkbox-primary">
+                                <div class="ms-2 text-sm">
+                                    <label class="label-text">Rounded</label>
+                                    <p class="text-xs text-base-content">画像の角を丸くします</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex p-4">
+                            <div class="flex items-center h-5">
+                                <input type="checkbox" id="maincolor" name="maincolor"
+                                    class="checkbox checkbox-primary">
+                                <div class="ms-2 text-sm">
+                                    <label class="label-text">MainColor</label>
+                                    <p class="text-xs text-base-content">画像の最下部に特徴色をつけます</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary my-4 mx-4" onclick="callPythonFunction()">Run</button>
+                        <button class="btn btn-primary my-4 mx-4" onclick="saveImage()" disabled
+                            id="saveButton">Save</button>
+                        <p class="text-xs my-4mx-4">※画像はユーザーのダウンロードフォルダに保存されます</p>
+                    </div>
+
+                    <div class=" col-start-2 flex justify-center items-center">
+                        <span id="spinner" class="loading loading-bars loading-lg hidden"></span>
+                        <img id="output-image" src=".\images\imagesmode_500dp_5F6368_FILL0_wght400_GRAD0_opsz48.png"
+                            alt="Output Image" class="mt-4">
+                    </div>
+                </div>
+            </div>
+
+
+        </section>
+    </main>
+    <footer class="footer absolute bottom-0 bg-neutral text-neutral-content p-4 mt-4">
+        <p class="text-center">&copy; 2025 goslyng-goldwyn</p>
+    </footer>
+    <script src="./js/func.js"></script>
+</body>
+
+</html>

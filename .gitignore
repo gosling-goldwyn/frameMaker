@@ -132,3 +132,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+.vscode/
+*.code-workspace
+upx*/
+!build.spec

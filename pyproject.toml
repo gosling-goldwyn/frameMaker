@@ -1,0 +1,59 @@
+[project]
+name = "frame-maker"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "numpy>=2.2.1",
+    "opencv-contrib-python-headless>=4.10.0.84",
+    "pillow>=11.1.0",
+    "python-dotenv>=1.0.1",
+    "pywebview>=5.3.2",
+    "scikit-learn>=1.6.0",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.14.1",
+    "opencv-stubs[opencv-contrib]>=0.0.10",
+    "pyinstaller>=6.11.1",
+    "ruff>=0.7.1",
+]
+
+
+[tool.ruff]
+# 1行の最大文字数
+line-length = 88
+
+[tool.ruff.lint]
+# チェックするエラーの種類
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+# 除外するエラーの種類
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+    "W191",  # indentation contains tabs
+    "B904", # raise ... from ... になっていない場合のエラーを無視
+]
+
+# ファイルごとのエラー除外
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+# isort の設定
+[tool.ruff.lint.isort]
+known-third-party = ["fastapi", "pydantic", "starlette"]
+
+[tool.ruff.lint.pyupgrade]
+# Python3.8互換のための設定
+keep-runtime-typing = true
