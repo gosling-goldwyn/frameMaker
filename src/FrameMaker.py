@@ -10,9 +10,8 @@ SIDE_MARGIN_RATIO = 0.309  # (1-GOLDEN_RATIO)/2s
 
 
 class FrameMaker:
-    radius = 40
 
-    def __init__(self, fp, golden, black, rounded, mc, webimg=None):
+    def __init__(self, fp, golden, black, rounded, mc, webimg=None, radius=40):
         if fp != "":
             img = cv2.imread(fp, cv2.IMREAD_COLOR)
 
@@ -31,6 +30,7 @@ class FrameMaker:
         self.golden = golden
         self.black = black
         self.rounded = rounded
+        self.radius = radius
         self.mc = mc
         self.transpose = False
         self.is_square = self.height == self.width

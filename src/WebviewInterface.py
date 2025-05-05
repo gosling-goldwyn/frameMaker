@@ -62,10 +62,11 @@ class API:
         black: bool,
         rounded: bool,
         maincolor: bool,
+        radius: int = 40
     ) -> str:
         try:
             webimg = base64_string_to_pillow_image(inputdata)
-            fm = FrameMaker("", golden, black, rounded, maincolor, webimg=webimg)
+            fm = FrameMaker("", golden, black, rounded, maincolor, webimg=webimg, radius=radius)
             result = fm.run()
         except ReadError:
             print("Read Error: File doesn't exist (unsupported japanese characters)")
