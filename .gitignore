@@ -28,7 +28,7 @@ wheels/
 pip-wheel-metadata/
 share/python-wheels/
 *.egg-info/
-.installed.cfg
+.installed_cfg
 *.egg
 MANIFEST
 
@@ -137,3 +137,5 @@ dmypy.json
 *.code-workspace
 upx*/
 !build.spec
+
+commit_message.txt
