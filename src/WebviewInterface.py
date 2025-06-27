@@ -49,7 +49,7 @@ class API:
         try:
             handler = ImageHandler(fp=inputpath.replace("blob:", ""))
             fm = FrameMaker(
-                handler, golden, black, rounded, maincolor
+                handler, golden, black, rounded, maincolor, golden_ratio=1.618, side_margin_ratio=0.309
             )
             result = fm.run()
         except ReadError:
@@ -70,7 +70,7 @@ class API:
             webimg = base64_string_to_pillow_image(inputdata)
             handler = ImageHandler(fp="", webimg=webimg)
             fm = FrameMaker(
-                handler, golden, black, rounded, maincolor, radius=radius
+                handler, golden, black, rounded, maincolor, radius=radius, golden_ratio=1.618, side_margin_ratio=0.309
             )
             result = fm.run()
         except ReadError:
@@ -109,7 +109,7 @@ class API:
             webimg = base64_string_to_pillow_image(inputdata)
             handler = ImageHandler(fp="", webimg=webimg)
             fm = FrameMaker(
-                handler, golden, black, rounded, maincolor, radius=radius
+                handler, golden, black, rounded, maincolor, radius=radius, golden_ratio=1.618, side_margin_ratio=0.309
             )
             result = fm.runGetMainColorRGBValue()
             return result
