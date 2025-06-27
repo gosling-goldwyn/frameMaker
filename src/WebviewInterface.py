@@ -8,6 +8,7 @@ from PIL import Image
 
 from src.Error import ReadError
 from src.FrameMaker import FrameMaker
+from src.ImageHandler import ImageHandler
 
 
 def pillow_image_to_base64_string(img: Image) -> str:
@@ -46,14 +47,15 @@ class API:
         maincolor: bool,
     ) -> None:
         try:
+            handler = ImageHandler(fp=inputpath.replace("blob:", ""))
             fm = FrameMaker(
-                inputpath.replace("blob:", ""), golden, black, rounded, maincolor
+                handler, golden, black, rounded, maincolor
             )
             result = fm.run()
         except ReadError:
             print("Read Error: File doesn't exist (unsupported japanese characters)")
         else:
-            cv2.imwrite(outputpath, result, [cv2.IMWRITE_JPEG_QUALITY, 100])
+            handler.save_image(outputpath, result)
 
     def runFrameMakerFromWebview(
         self,
@@ -62,11 +64,14 @@ class API:
         black: bool,
         rounded: bool,
         maincolor: bool,
-        radius: int = 40
+        radius: int = 40,
     ) -> str:
         try:
             webimg = base64_string_to_pillow_image(inputdata)
-            fm = FrameMaker("", golden, black, rounded, maincolor, webimg=webimg, radius=radius)
+            handler = ImageHandler(fp="", webimg=webimg)
+            fm = FrameMaker(
+                handler, golden, black, rounded, maincolor, radius=radius
+            )
             result = fm.run()
         except ReadError:
             print("Read Error: File doesn't exist (unsupported japanese characters)")
@@ -81,6 +86,7 @@ class API:
 
     def saveImage(self, inputdata: str) -> None:
         webimg = base64_string_to_pillow_image(inputdata)
+        handler = ImageHandler(fp="", webimg=webimg)
         base_dir = os.getenv(
             "USERPROFILE",
             "NOT_DEFINED",
@@ -88,4 +94,25 @@ class API:
         save_path = get_save_path("output.jpg", f"{base_dir}\\Downloads")
         print(webimg)
         print(save_path)
-        webimg.save(save_path, "JPEG", quality=95)
+        handler.save_image(save_path, np.array(webimg))
+
+    def getMainColorRGBValue(
+        self,
+        inputdata: str,
+        golden: bool,
+        black: bool,
+        rounded: bool,
+        maincolor: bool,
+        radius: int = 40,
+    ) -> list[str]:
+        try:
+            webimg = base64_string_to_pillow_image(inputdata)
+            handler = ImageHandler(fp="", webimg=webimg)
+            fm = FrameMaker(
+                handler, golden, black, rounded, maincolor, radius=radius
+            )
+            result = fm.runGetMainColorRGBValue()
+            return result
+        except ReadError:
+            print("Read Error: File doesn't exist (unsupported japanese characters)")
+            return []
