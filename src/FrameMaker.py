@@ -2,12 +2,23 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw
 
-from src.colorpick import getMainColorKmeans
+from src.colorpick import getMainColorKmeans  # , getMainColorRGBValue
 from src.ImageHandler import ImageHandler
+
+GOLDEN_RATIO = 1.618
+SIDE_MARGIN_RATIO = 0.309  # (1-GOLDEN_RATIO)/2s
 
 
 class FrameMaker:
-    def __init__(self, image_handler: ImageHandler, golden: bool, black: bool, rounded: bool, mc: bool, radius: int = 40, golden_ratio: float = 1.618, side_margin_ratio: float = 0.309):
+    def __init__(
+        self,
+        image_handler: ImageHandler,
+        golden: bool,
+        black: bool,
+        rounded: bool,
+        mc: bool,
+        radius: int = 40,
+    ):
         self.img, self.height, self.width, self.color = image_handler.get_image_data()
         self.org_img = image_handler.get_org_image()
 
@@ -19,8 +30,6 @@ class FrameMaker:
         self.transpose = False
         self.is_square = self.height == self.width
         self.is_width_base = False
-        self.golden_ratio = golden_ratio
-        self.side_margin_ratio = side_margin_ratio
         if self.rounded:
             mask = Image.new(
                 "RGB", (self.width, self.height), "Black" if self.black else "White"
@@ -47,16 +56,16 @@ class FrameMaker:
             self.img = self.img.transpose(1, 0, 2)
             self.height, self.width, self.color = self.img.shape
             self.transpose = True
-        elif int((self.golden_ratio * self.height - self.width) // 2) < 0:
+        elif int((1.618 * self.height - self.width) // 2) < 0:
             self.golden = False
 
         # 新しい画像の辺の長さを計算(黄金比1.618に基づく)
         if self.height < self.width:
             new_width = (
-                int(self.height * self.golden_ratio) if self.golden else int(self.width)
+                int(self.height * GOLDEN_RATIO) if self.golden else int(self.width)
             )
         else:
-            new_width = int(self.height * self.golden_ratio)
+            new_width = int(self.height * GOLDEN_RATIO)
 
         # 白枠をつけるか黒枠をつけるか
         new_img = (
@@ -67,11 +76,11 @@ class FrameMaker:
 
         # 画像を枠の中に配置する起点の計算
         if self.is_square:
-            sh = int(self.height * self.side_margin_ratio)
-            sw = int(self.width * self.side_margin_ratio)
+            sh = int(self.height * SIDE_MARGIN_RATIO)
+            sw = int(self.width * SIDE_MARGIN_RATIO)
         elif self.golden:
-            sh = int(self.height * self.side_margin_ratio)
-            sw = int((self.golden_ratio * self.height - self.width) // 2)
+            sh = int(self.height * SIDE_MARGIN_RATIO)
+            sw = int((GOLDEN_RATIO * self.height - self.width) // 2)
         else:
             sh = (self.width - self.height) // 2
             sw = 0
@@ -80,7 +89,7 @@ class FrameMaker:
 
         if self.mc:
             pickwidth = int(self.width // 5)
-            pickheight = int((self.height * self.side_margin_ratio) // 30)
+            pickheight = int((self.height * SIDE_MARGIN_RATIO) // 30)
             picker = getMainColorKmeans(self.org_img, pickwidth, pickheight)
             new_img[new_width - pickheight : new_width, sw : sw + pickwidth * 5] = (
                 picker / 255
