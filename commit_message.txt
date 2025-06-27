@@ -1,0 +1,1 @@
+refactor: Externalize golden ratio and side margin ratio in FrameMaker
