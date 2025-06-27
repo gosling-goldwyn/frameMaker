@@ -11,6 +11,9 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "pywebview>=5.3.2",
     "scikit-learn>=1.6.0",
+    "streamlit>=1.45.0",
+    "streamlit-image-comparison>=0.0.4",
+    "watchdog>=6.0.0; sys_platform == 'darwin'",
 ]
 
 [dependency-groups]

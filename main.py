@@ -35,6 +35,6 @@ if __name__ == "__main__":
         help="put the five main color in the image",
     )
     ARGS = PARSER.parse_args()
-    API.runFrameMaker(
+    API().runFrameMaker(
         ARGS.input, ARGS.output, ARGS.golden, ARGS.black, ARGS.rounded, ARGS.maincolor
     )

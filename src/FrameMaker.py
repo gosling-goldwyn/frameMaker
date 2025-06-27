@@ -2,39 +2,33 @@ import cv2
 import numpy as np
 from PIL import Image, ImageDraw
 
-from src.colorpick import getMainColorKmeans
-from src.Error import ReadError
+from src.colorpick import getMainColorKmeans  # , getMainColorRGBValue
+from src.ImageHandler import ImageHandler
 
 GOLDEN_RATIO = 1.618
 SIDE_MARGIN_RATIO = 0.309  # (1-GOLDEN_RATIO)/2s
 
 
 class FrameMaker:
-    radius = 40
-
-    def __init__(self, fp, golden, black, rounded, mc, webimg=None):
-        if fp != "":
-            img = cv2.imread(fp, cv2.IMREAD_COLOR)
-
-            # 読み込みに失敗すると例外
-            if img is None:
-                raise ReadError()
-        else:
-            img = np.array(webimg)
-            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-
-        self.img = img / 255
-        self.org_img = self.img
-
-        self.height, self.width, self.color = img.shape
+    def __init__(
+        self,
+        image_handler: ImageHandler,
+        golden: bool,
+        black: bool,
+        rounded: bool,
+        mc: bool,
+        radius: int = 40,
+    ):
+        self.img, self.height, self.width, self.color = image_handler.get_image_data()
+        self.org_img = image_handler.get_org_image()
 
         self.golden = golden
         self.black = black
         self.rounded = rounded
+        self.radius = radius
         self.mc = mc
         self.transpose = False
         self.is_square = self.height == self.width
-        self.fp = fp
         self.is_width_base = False
         if self.rounded:
             mask = Image.new(
@@ -105,3 +99,6 @@ class FrameMaker:
             new_img = new_img.transpose(1, 0, 2)
 
         return (new_img * 255).astype(int)
+
+    # def runGetMainColorRGBValue(self) -> list[str]:
+    #     return getMainColorRGBValue(self.org_img)

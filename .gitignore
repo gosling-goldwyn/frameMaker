@@ -137,3 +137,5 @@ dmypy.json
 *.code-workspace
 upx*/
 !build.spec
+
+commit_message.txt
