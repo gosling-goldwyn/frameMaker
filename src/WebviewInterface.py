@@ -9,6 +9,7 @@ from PIL import Image
 from src.Error import ReadError
 from src.FrameMaker import FrameMaker
 from src.ImageHandler import ImageHandler
+from src.colorpick import getMainColorRGBValue
 
 
 def pillow_image_to_base64_string(img: Image) -> str:
@@ -86,7 +87,6 @@ class API:
 
     def saveImage(self, inputdata: str) -> None:
         webimg = base64_string_to_pillow_image(inputdata)
-        handler = ImageHandler(fp="", webimg=webimg)
         base_dir = os.getenv(
             "USERPROFILE",
             "NOT_DEFINED",
@@ -94,7 +94,7 @@ class API:
         save_path = get_save_path("output.jpg", f"{base_dir}\\Downloads")
         print(webimg)
         print(save_path)
-        handler.save_image(save_path, np.array(webimg))
+        webimg.save(save_path, "JPEG", quality=95)
 
     def getMainColorRGBValue(
         self,
@@ -104,15 +104,15 @@ class API:
         rounded: bool,
         maincolor: bool,
         radius: int = 40,
+        golden_ratio: float = 1.618,
+        side_margin_ratio: float = 0.309,
     ) -> list[str]:
         try:
             webimg = base64_string_to_pillow_image(inputdata)
             handler = ImageHandler(fp="", webimg=webimg)
-            fm = FrameMaker(
-                handler, golden, black, rounded, maincolor, radius=radius, golden_ratio=1.618, side_margin_ratio=0.309
-            )
-            result = fm.runGetMainColorRGBValue()
+            # FrameMakerのインスタンスは不要。直接colorpickの関数を呼び出す
+            result = getMainColorRGBValue(handler.org_img)
             return result
         except ReadError:
             print("Read Error: File doesn't exist (unsupported japanese characters)")
-            return []
+            return ""
