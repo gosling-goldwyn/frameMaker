@@ -4,6 +4,18 @@ from sklearn.cluster import KMeans
 
 
 def getMainColorKmeans(img: np.ndarray, width: int, height: int) -> np.ndarray:
+    """
+    画像から主要な色を抽出し、それらを表すカラーバー画像を生成します。
+    KMeans クラスタリングを使用して色を特定します。
+
+    Args:
+        img (np.ndarray): 処理する画像データ (NumPy 配列)。
+        width (int): 生成するカラーバーの各色の幅。
+        height (int): 生成するカラーバーの高さ。
+
+    Returns:
+        np.ndarray: 主要な色を表すカラーバー画像データ (NumPy 配列)。
+    """
     # 3チャンネルの画像を(縦*横,3)の行列に変換
     cv2_img = img.reshape((img.shape[0] * img.shape[1], 3))
 
@@ -53,6 +65,16 @@ def getMainColorKmeans(img: np.ndarray, width: int, height: int) -> np.ndarray:
 
 
 def getMainColorRGBValue(img: np.ndarray) -> list[str]:
+    """
+    画像から主要な色の RGB 値をリストとして取得します。
+    KMeans クラスタリングを使用して色を特定します。
+
+    Args:
+        img (np.ndarray): 処理する画像データ (NumPy 配列)。
+
+    Returns:
+        list[str]: 主要な色の RGB 値のリスト (例: ["RRGGBB", ...])。
+    """
     # 3チャンネルの画像を(縦*横,3)の行列に変換
     cv2_img = img.reshape((img.shape[0] * img.shape[1], 3))
 
