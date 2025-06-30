@@ -1,6 +1,7 @@
 import base64
 import io
 import os
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -10,6 +11,7 @@ from src.Error import ReadError
 from src.FrameMaker import FrameMaker
 from src.ImageHandler import ImageHandler
 from src.colorpick import getMainColorRGBValue
+from src.constants import GOLDEN_RATIO, SIDE_MARGIN_RATIO, DEFAULT_RADIUS
 
 
 def pillow_image_to_base64_string(img: Image) -> str:
@@ -94,7 +96,7 @@ class API:
         try:
             handler = ImageHandler(fp=inputpath.replace("blob:", ""))
             fm = FrameMaker(
-                handler, golden, black, rounded, maincolor, golden_ratio=1.618, side_margin_ratio=0.309
+                handler, golden, black, rounded, maincolor, golden_ratio=GOLDEN_RATIO, side_margin_ratio=SIDE_MARGIN_RATIO
             )
             result = fm.run()
         except ReadError:
@@ -109,7 +111,7 @@ class API:
         black: bool,
         rounded: bool,
         maincolor: bool,
-        radius: int = 40,
+        radius: int = DEFAULT_RADIUS,
     ) -> str:
         """
         Base64 エンコードされた画像データにフレーム処理を適用し、結果を Base64 文字列で返します。
@@ -120,7 +122,7 @@ class API:
             black (bool): 黒いフレームを適用するかどうか。
             rounded (bool): 角丸フレームを適用するかどうか。
             maincolor (bool): メインカラーバーを追加するかどうか。
-            radius (int, optional): 角丸の半径。デフォルトは 40。
+            radius (int, optional): 角丸の半径。デフォルトは constants.DEFAULT_RADIUS。
 
         Returns:
             str: Base64 エンコードされた処理済み画像データ。
@@ -129,7 +131,7 @@ class API:
             webimg = base64_string_to_pillow_image(inputdata)
             handler = ImageHandler(fp="", webimg=webimg)
             fm = FrameMaker(
-                handler, golden, black, rounded, maincolor, radius=radius, golden_ratio=1.618, side_margin_ratio=0.309
+                handler, golden, black, rounded, maincolor, radius=radius, golden_ratio=GOLDEN_RATIO, side_margin_ratio=SIDE_MARGIN_RATIO
             )
             result = fm.run()
         except ReadError:
@@ -151,39 +153,21 @@ class API:
             inputdata (str): Base64 エンコードされた画像データ。
         """
         webimg = base64_string_to_pillow_image(inputdata)
-        base_dir = os.getenv(
-            "USERPROFILE",
-            "NOT_DEFINED",
-        )
-        save_path = get_save_path("output.jpg", f"{base_dir}\\Downloads")
-        print(webimg)
-        print(save_path)
+        # Use pathlib for cross-platform path handling
+        downloads_path = Path.home() / "Downloads"
+        downloads_path.mkdir(parents=True, exist_ok=True) # Ensure directory exists
+        save_path = get_save_path("output.jpg", str(downloads_path))
         webimg.save(save_path, "JPEG", quality=95)
 
     def getMainColorRGBValue(
         self,
         inputdata: str,
-        golden: bool,
-        black: bool,
-        rounded: bool,
-        maincolor: bool,
-        radius: int = 40,
-        golden_ratio: float = 1.618,
-        side_margin_ratio: float = 0.309,
     ) -> list[str]:
         """
         Base64 エンコードされた画像データから主要な色の RGB 値を取得します。
 
         Args:
             inputdata (str): Base64 エンコードされた入力画像データ。
-            golden (bool): 黄金比フレームの適用有無 (この関数では使用されません)。
-            black (bool): 黒いフレームの適用有無 (この関数では使用されません)。
-            rounded (bool): 角丸フレームの適用有無 (この関数では使用されません)。
-            maincolor (bool): メインカラーバーの追加有無 (この関数では使用されません)。
-            radius (int, optional): 角丸の半径 (この関数では使用されません)。デフォルトは 40。
-            golden_ratio (float, optional): 黄金比の値 (この関数では使用されません)。デフォルトは 1.618。
-            side_margin_ratio (float, optional): サイドマージンの比率 (この関数では使用されません)。デフォルトは 0.309。
-
         Returns:
             list[str]: 主要な色の RGB 値のリスト (例: ["RRGGBB", ...])。
         """
@@ -194,5 +178,6 @@ class API:
             result = getMainColorRGBValue(handler.org_img)
             return result
         except ReadError:
+            # Consider logging this error instead of printing
             print("Read Error: File doesn't exist (unsupported japanese characters)")
             return ""

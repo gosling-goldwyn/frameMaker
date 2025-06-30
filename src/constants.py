@@ -1,0 +1,11 @@
+# src/constants.py
+
+# FrameMaker Constants
+GOLDEN_RATIO = 1.618
+SIDE_MARGIN_RATIO = 0.309
+DEFAULT_RADIUS = 40
+
+# Colorpick Constants
+KMEANS_CLUSTERS = 5
+SATURATION_THRESHOLD = 0.5
+BRIGHTNESS_THRESHOLD = 0.5
