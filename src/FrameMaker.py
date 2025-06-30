@@ -6,6 +6,11 @@ from src.ImageHandler import ImageHandler
 
 
 class FrameMaker:
+    """
+    画像にフレームを追加する機能を提供するクラス。
+    黄金比、白黒フレーム、角丸、メインカラーバーなどのオプションをサポートします。
+    """
+
     def __init__(
         self,
         hdl: ImageHandler,
@@ -17,6 +22,19 @@ class FrameMaker:
         golden_ratio=1.618,
         side_margin_ratio=0.309,
     ):
+        """
+        FrameMaker クラスのコンストラクタ。
+
+        Args:
+            hdl (ImageHandler): 処理する画像を含む ImageHandler オブジェクト。
+            golden (bool): 黄金比フレームを適用するかどうか。
+            black (bool): 黒いフレームを適用するかどうか (False の場合は白いフレーム)。
+            rounded (bool): 角丸フレームを適用するかどうか。
+            mc (bool): メインカラーバーを追加するかどうか。
+            radius (int, optional): 角丸の半径。デフォルトは 40。
+            golden_ratio (float, optional): 黄金比の値。デフォルトは 1.618。
+            side_margin_ratio (float, optional): サイドマージンの比率。デフォルトは 0.309。
+        """
         self.img = hdl.img
         self.org_img = hdl.org_img
 
@@ -48,9 +66,19 @@ class FrameMaker:
             self.roundmask = np.array(mask) / 255
 
     def run(self) -> np.ndarray:
+        """
+        フレーム処理を実行し、結果の画像を NumPy 配列として返します。
+
+        Returns:
+            np.ndarray: フレームが適用された画像データ (NumPy 配列)。
+        """
         # 処理用の画像とサイズを一時変数にコピー
         current_img = self.img.copy()
-        current_height, current_width, current_color = self.height, self.width, self.color
+        current_height, current_width, current_color = (
+            self.height,
+            self.width,
+            self.color,
+        )
 
         if self.rounded:
             current_img = (
@@ -80,9 +108,13 @@ class FrameMaker:
 
         # 白枠をつけるか黒枠をつけるか
         new_img = (
-            np.zeros([target_side_length, target_side_length, current_color], dtype="float64")
+            np.zeros(
+                [target_side_length, target_side_length, current_color], dtype="float64"
+            )
             if self.black
-            else np.ones([target_side_length, target_side_length, current_color], dtype="float64")
+            else np.ones(
+                [target_side_length, target_side_length, current_color], dtype="float64"
+            )
         )
 
         # 画像を枠の中に配置する起点の計算
@@ -106,8 +138,9 @@ class FrameMaker:
 
             # カラーバーを新しい正方形画像の下部に中央揃えで配置
             sw_for_color_bar = (final_width - pickwidth * 5) // 2
-            new_img[final_height - pickheight : final_height, sw_for_color_bar : sw_for_color_bar + pickwidth * 5] = (
-                picker / 255
-            )
+            new_img[
+                final_height - pickheight : final_height,
+                sw_for_color_bar : sw_for_color_bar + pickwidth * 5,
+            ] = picker / 255
 
         return (new_img * 255).astype(int)

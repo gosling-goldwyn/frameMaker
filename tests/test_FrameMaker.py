@@ -1,7 +1,8 @@
 import os
 import sys
-import pytest
+
 import numpy as np
+import pytest
 from PIL import Image
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
@@ -51,7 +52,12 @@ def sample_image_handler_colored():
 
 
 def test_frame_maker_golden_ratio_white_frame(sample_image_handler_tall):
-    # 縦長の画像で黄金比の白いフレームをテスト
+    """
+    縦長の画像に対して、黄金比に基づいた白いフレームが正しく適用されることを確認する。
+
+    テスト対象機能: FrameMakerのgolden=True, black=Falseオプション
+    期待結果: 出力画像の縦横サイズが期待される黄金比に基づいたサイズであり、フレーム部分が白であること。
+    """
     fm = FrameMaker(
         sample_image_handler_tall, golden=True, black=False, rounded=False, mc=False
     )
@@ -72,7 +78,12 @@ def test_frame_maker_golden_ratio_white_frame(sample_image_handler_tall):
 
 
 def test_frame_maker_golden_ratio_black_frame(sample_image_handler_wide):
-    # 横長の画像で黄金比の黒いフレームをテスト
+    """
+    横長の画像に対して、黄金比に基づいた黒いフレームが正しく適用されることを確認する。
+
+    テスト対象機能: FrameMakerのgolden=True, black=Trueオプション
+    期待結果: 出力画像の縦横サイズが期待される黄金比に基づいたサイズであり、フレーム部分が黒であること。
+    """
     fm = FrameMaker(
         sample_image_handler_wide, golden=True, black=True, rounded=False, mc=False
     )
@@ -93,7 +104,12 @@ def test_frame_maker_golden_ratio_black_frame(sample_image_handler_wide):
 
 
 def test_frame_maker_no_golden_ratio_white_frame(sample_image_handler):
-    # 黄金比なしの白いフレームをテスト（正方形画像）
+    """
+    正方形の画像に対して、黄金比を適用しない白いフレームが正しく適用されることを確認する。
+
+    テスト対象機能: FrameMakerのgolden=False, black=Falseオプション
+    期待結果: 出力画像の縦横サイズが元の画像の最大辺の長さであり、フレーム部分が白であること。
+    """
     fm = FrameMaker(
         sample_image_handler, golden=False, black=False, rounded=False, mc=False
     )
@@ -111,7 +127,12 @@ def test_frame_maker_no_golden_ratio_white_frame(sample_image_handler):
 
 
 def test_frame_maker_no_golden_ratio_black_frame(sample_image_handler_tall):
-    # 黄金比なしの黒いフレームをテスト（縦長画像）
+    """
+    縦長の画像に対して、黄金比を適用しない黒いフレームが正しく適用されることを確認する。
+
+    テスト対象機能: FrameMakerのgolden=False, black=Trueオプション
+    期待結果: 出力画像の縦横サイズが元の画像の最大辺の長さであり、フレーム部分が黒であること。
+    """
     fm = FrameMaker(
         sample_image_handler_tall, golden=False, black=True, rounded=False, mc=False
     )
@@ -119,7 +140,9 @@ def test_frame_maker_no_golden_ratio_black_frame(sample_image_handler_tall):
 
     # src/FrameMaker.pyのロジックに基づくと、
     # target_side_length = max(original_height, original_width)
-    expected_side_length = max(sample_image_handler_tall.height, sample_image_handler_tall.width)
+    expected_side_length = max(
+        sample_image_handler_tall.height, sample_image_handler_tall.width
+    )
 
     assert result_img.shape[0] == expected_side_length
     assert result_img.shape[1] == expected_side_length
@@ -129,7 +152,12 @@ def test_frame_maker_no_golden_ratio_black_frame(sample_image_handler_tall):
 
 
 def test_frame_maker_rounded_white_frame(sample_image_handler):
-    # 角丸の白いフレームをテスト
+    """
+    正方形の画像に対して、角丸の白いフレームが正しく適用されることを確認する。
+
+    テスト対象機能: FrameMakerのrounded=True, black=Falseオプション
+    期待結果: 出力画像のフレーム部分が白であり、角が丸められていること。
+    """
     fm = FrameMaker(
         sample_image_handler, golden=False, black=False, rounded=True, mc=False
     )
@@ -140,7 +168,12 @@ def test_frame_maker_rounded_white_frame(sample_image_handler):
 
 
 def test_frame_maker_rounded_black_frame(sample_image_handler):
-    # 角丸の黒いフレームをテスト
+    """
+    正方形の画像に対して、角丸の黒いフレームが正しく適用されることを確認する。
+
+    テスト対象機能: FrameMakerのrounded=True, black=Trueオプション
+    期待結果: 出力画像のフレーム部分が黒であり、角が丸められていること。
+    """
     fm = FrameMaker(
         sample_image_handler, golden=False, black=True, rounded=True, mc=False
     )
@@ -151,7 +184,12 @@ def test_frame_maker_rounded_black_frame(sample_image_handler):
 
 
 def test_frame_maker_main_color_bar(sample_image_handler_colored):
-    # メインカラーバーのテスト
+    """
+    カラー画像に対して、メインカラーバーが正しく適用されることを確認する。
+
+    テスト対象機能: FrameMakerのmc=Trueオプション
+    期待結果: 出力画像にカラーバーが追加され、その領域が完全に白ではないこと。
+    """
     fm = FrameMaker(
         sample_image_handler_colored, golden=False, black=False, rounded=False, mc=True
     )
@@ -166,7 +204,12 @@ def test_frame_maker_main_color_bar(sample_image_handler_colored):
 
 
 def test_frame_maker_rounded_and_main_color_bar(sample_image_handler_colored):
-    # 角丸とメインカラーバーの組み合わせテスト
+    """
+    カラー画像に対して、角丸とメインカラーバーが組み合わせて正しく適用されることを確認する。
+
+    テスト対象機能: FrameMakerのrounded=True, mc=Trueオプション
+    期待結果: 出力画像の角が丸められ、カラーバーが追加され、その領域が完全に白ではないこと。
+    """
     fm = FrameMaker(
         sample_image_handler_colored, golden=False, black=False, rounded=True, mc=True
     )
