@@ -16,7 +16,7 @@ class FrameMaker:
         self,
         hdl: ImageHandler,
         golden: bool,
-        black: bool,
+        bgcolor: str,
         rounded: bool,
         mc: bool,
         radius: int = DEFAULT_RADIUS,
@@ -42,7 +42,7 @@ class FrameMaker:
         self.height, self.width, _ = hdl.img.shape  # self.color は不要
 
         self.golden = golden
-        self.black = black
+        self.bgcolor = bgcolor
         self.rounded = rounded
         self.radius = radius
         self.mc = mc
@@ -53,20 +53,15 @@ class FrameMaker:
         self.golden_ratio = golden_ratio
         self.side_margin_ratio = side_margin_ratio
         
-        self.roundmask = None  # デフォルト値をNoneに設定
+        self.roundmask = None
         if self.rounded:
-            mask = Image.new(
-                "RGB", (self.width, self.height), "Black" if self.black else "White"
+            mask = Image.new("L", (self.width, self.height), 0)
+            draw = ImageDraw.Draw(mask)
+            draw.rounded_rectangle(
+                [(0, 0), (self.width, self.height)], radius=self.radius, fill=255
             )
-            pil_roundmask = ImageDraw.Draw(mask)
-            pil_roundmask.rounded_rectangle(
-                [(1, 1), (self.width - 1, self.height - 1)],
-                radius=self.radius,
-                fill="White" if self.black else "Black",
-                outline="White" if self.black else "Black",
-                width=1,
-            )
-            self.roundmask = np.array(mask) / 255
+            self.roundmask = np.array(mask) / 255.0
+            self.roundmask = self.roundmask[:, :, np.newaxis]
 
     def run(self) -> np.ndarray:
         """
@@ -80,11 +75,10 @@ class FrameMaker:
         current_height, current_width, _ = current_img.shape
 
         if self.rounded:
-            current_img = (
-                np.where(self.roundmask == 0, 0, current_img)
-                if self.black
-                else np.where(self.roundmask == 1, 1, current_img)
-            )
+            hex_color = self.bgcolor.lstrip('#')
+            r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+            background_color = np.array([b, g, r]) / 255.0
+            current_img = current_img * self.roundmask + background_color * (1 - self.roundmask)
 
         # 縦長なら転置して横長にする
         transposed_for_processing = False
@@ -105,16 +99,16 @@ class FrameMaker:
         # 新しい画像のサイズが元の画像を収めるのに十分であることを保証
         target_side_length = max(target_side_length, current_height, current_width)
 
+        # 16進数カラーコードをRGBタプルに変換
+        hex_color = self.bgcolor.lstrip('#')
+        r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+
         # 白枠をつけるか黒枠をつけるか
-        new_img = (
-            np.zeros(
-                [target_side_length, target_side_length, current_img.shape[2]], dtype="float64"
-            )
-            if self.black
-            else np.ones(
-                [target_side_length, target_side_length, current_img.shape[2]], dtype="float64"
-            )
-        )
+        new_img = np.full(
+            (target_side_length, target_side_length, current_img.shape[2]),
+            (b, g, r),  # OpenCVはBGR順なので注意
+            dtype="float64"
+        ) / 255.0
 
         # 画像を枠の中に配置する起点の計算
         # current_imgの現在の形状（転置されている可能性のある形状）に基づいて中央に配置

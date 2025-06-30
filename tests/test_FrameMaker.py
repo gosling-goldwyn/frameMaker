@@ -59,7 +59,7 @@ def test_frame_maker_golden_ratio_white_frame(sample_image_handler_tall):
     期待結果: 出力画像の縦横サイズが期待される黄金比に基づいたサイズであり、フレーム部分が白であること。
     """
     fm = FrameMaker(
-        sample_image_handler_tall, golden=True, black=False, rounded=False, mc=False
+        sample_image_handler_tall, golden=True, bgcolor="#FFFFFF", rounded=False, mc=False
     )
     result_img = fm.run()
 
@@ -85,7 +85,7 @@ def test_frame_maker_golden_ratio_black_frame(sample_image_handler_wide):
     期待結果: 出力画像の縦横サイズが期待される黄金比に基づいたサイズであり、フレーム部分が黒であること。
     """
     fm = FrameMaker(
-        sample_image_handler_wide, golden=True, black=True, rounded=False, mc=False
+        sample_image_handler_wide, golden=True, bgcolor="#000000", rounded=False, mc=False
     )
     result_img = fm.run()
 
@@ -111,7 +111,7 @@ def test_frame_maker_no_golden_ratio_white_frame(sample_image_handler):
     期待結果: 出力画像の縦横サイズが元の画像の最大辺の長さであり、フレーム部分が白であること。
     """
     fm = FrameMaker(
-        sample_image_handler, golden=False, black=False, rounded=False, mc=False
+        sample_image_handler, golden=False, bgcolor="#FFFFFF", rounded=False, mc=False
     )
     result_img = fm.run()
 
@@ -134,7 +134,7 @@ def test_frame_maker_no_golden_ratio_black_frame(sample_image_handler_tall):
     期待結果: 出力画像の縦横サイズが元の画像の最大辺の長さであり、フレーム部分が黒であること。
     """
     fm = FrameMaker(
-        sample_image_handler_tall, golden=False, black=True, rounded=False, mc=False
+        sample_image_handler_tall, golden=False, bgcolor="#000000", rounded=False, mc=False
     )
     result_img = fm.run()
 
@@ -159,7 +159,7 @@ def test_frame_maker_rounded_white_frame(sample_image_handler):
     期待結果: 出力画像のフレーム部分が白であり、角が丸められていること。
     """
     fm = FrameMaker(
-        sample_image_handler, golden=False, black=False, rounded=True, mc=False
+        sample_image_handler, golden=False, bgcolor="#FFFFFF", rounded=True, mc=False
     )
     result_img = fm.run()
 
@@ -175,7 +175,7 @@ def test_frame_maker_rounded_black_frame(sample_image_handler):
     期待結果: 出力画像のフレーム部分が黒であり、角が丸められていること。
     """
     fm = FrameMaker(
-        sample_image_handler, golden=False, black=True, rounded=True, mc=False
+        sample_image_handler, golden=False, bgcolor="#000000", rounded=True, mc=False
     )
     result_img = fm.run()
 
@@ -191,7 +191,7 @@ def test_frame_maker_main_color_bar(sample_image_handler_colored):
     期待結果: 出力画像にカラーバーが追加され、その領域が完全に白ではないこと。
     """
     fm = FrameMaker(
-        sample_image_handler_colored, golden=False, black=False, rounded=False, mc=True
+        sample_image_handler_colored, golden=False, bgcolor="#FFFFFF", rounded=False, mc=True
     )
     result_img = fm.run()
 
@@ -211,7 +211,7 @@ def test_frame_maker_rounded_and_main_color_bar(sample_image_handler_colored):
     期待結果: 出力画像の角が丸められ、カラーバーが追加され、その領域が完全に白ではないこと。
     """
     fm = FrameMaker(
-        sample_image_handler_colored, golden=False, black=False, rounded=True, mc=True
+        sample_image_handler_colored, golden=False, bgcolor="#FFFFFF", rounded=True, mc=True
     )
     result_img = fm.run()
 

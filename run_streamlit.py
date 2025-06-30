@@ -52,7 +52,7 @@ if uploaded_file:
         with st.spinner("処理中..."):
             # APIを呼び出して画像を処理
             result_data_url = api.runFrameMakerFromWebview(
-                img_data_url, golden, black, True if radius > 0 else False, maincolor, radius
+                img_data_url, golden, "#000000" if black else "#FFFFFF", True if radius > 0 else False, maincolor, radius
             )
             if result_data_url:
                 # 処理結果を表示

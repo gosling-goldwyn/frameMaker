@@ -32,11 +32,17 @@
                             </div>
                         </div>
                         <div class="flex p-4">
-                            <div class="flex items-center h-5">
-                                <input type="checkbox" id="black" name="black" class="checkbox checkbox-primary">
-                                <div class="ms-2 text-sm">
-                                    <label class="label-text">Black</label>
-                                    <p class="text-xs text-base-content">フレームを黒にします</p>
+                            <div class="flex flex-col items-start h-auto">
+                                <div id="color-options">
+                                    <label class="label-text">背景色</label>
+                                    <div class="flex items-center">
+                                        <input type="radio" id="white" name="bgcolor" value="#FFFFFF" class="radio radio-primary" checked>
+                                        <label for="white" class="ml-2">White</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="radio" id="black" name="bgcolor" value="#000000" class="radio radio-primary">
+                                        <label for="black" class="ml-2">Black</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
