@@ -3,6 +3,7 @@ from PIL import Image, ImageDraw
 
 from src.colorpick import getMainColorKmeans
 from src.ImageHandler import ImageHandler
+from src.constants import GOLDEN_RATIO, SIDE_MARGIN_RATIO, DEFAULT_RADIUS
 
 
 class FrameMaker:
@@ -18,9 +19,9 @@ class FrameMaker:
         black: bool,
         rounded: bool,
         mc: bool,
-        radius=40,
-        golden_ratio=1.618,
-        side_margin_ratio=0.309,
+        radius: int = DEFAULT_RADIUS,
+        golden_ratio: float = GOLDEN_RATIO,
+        side_margin_ratio: float = SIDE_MARGIN_RATIO,
     ):
         """
         FrameMaker クラスのコンストラクタ。
@@ -31,14 +32,14 @@ class FrameMaker:
             black (bool): 黒いフレームを適用するかどうか (False の場合は白いフレーム)。
             rounded (bool): 角丸フレームを適用するかどうか。
             mc (bool): メインカラーバーを追加するかどうか。
-            radius (int, optional): 角丸の半径。デフォルトは 40。
-            golden_ratio (float, optional): 黄金比の値。デフォルトは 1.618。
-            side_margin_ratio (float, optional): サイドマージンの比率。デフォルトは 0.309。
+            radius (int, optional): 角丸の半径。デフォルトは constants.DEFAULT_RADIUS。
+            golden_ratio (float, optional): 黄金比の値。デフォルトは constants.GOLDEN_RATIO。
+            side_margin_ratio (float, optional): サイドマージンの比率。デフォルトは constants.SIDE_MARGIN_RATIO。
         """
         self.img = hdl.img
         self.org_img = hdl.org_img
 
-        self.height, self.width, self.color = hdl.img.shape
+        self.height, self.width, _ = hdl.img.shape  # self.color は不要
 
         self.golden = golden
         self.black = black
@@ -51,6 +52,8 @@ class FrameMaker:
         self.is_width_base = False
         self.golden_ratio = golden_ratio
         self.side_margin_ratio = side_margin_ratio
+        
+        self.roundmask = None  # デフォルト値をNoneに設定
         if self.rounded:
             mask = Image.new(
                 "RGB", (self.width, self.height), "Black" if self.black else "White"
@@ -74,11 +77,7 @@ class FrameMaker:
         """
         # 処理用の画像とサイズを一時変数にコピー
         current_img = self.img.copy()
-        current_height, current_width, current_color = (
-            self.height,
-            self.width,
-            self.color,
-        )
+        current_height, current_width, _ = current_img.shape
 
         if self.rounded:
             current_img = (
@@ -91,7 +90,7 @@ class FrameMaker:
         transposed_for_processing = False
         if current_height > current_width:
             current_img = current_img.transpose(1, 0, 2)
-            current_height, current_width, current_color = current_img.shape
+            current_height, current_width, _ = current_img.shape
             transposed_for_processing = True
 
         # 新しい画像の辺の長さを計算
@@ -109,11 +108,11 @@ class FrameMaker:
         # 白枠をつけるか黒枠をつけるか
         new_img = (
             np.zeros(
-                [target_side_length, target_side_length, current_color], dtype="float64"
+                [target_side_length, target_side_length, current_img.shape[2]], dtype="float64"
             )
             if self.black
             else np.ones(
-                [target_side_length, target_side_length, current_color], dtype="float64"
+                [target_side_length, target_side_length, current_img.shape[2]], dtype="float64"
             )
         )
 

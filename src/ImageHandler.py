@@ -29,7 +29,7 @@ class ImageHandler:
             raise ValueError("Either fp or webimg must be provided.")
 
         self.org_img = self.img.copy()
-        self.height, self.width, self.color = self.img.shape
+        self.height, self.width, _ = self.img.shape  # self.color は不要
         self.fp = fp
 
     def _read_image_from_path(self, fp: str) -> np.ndarray:
