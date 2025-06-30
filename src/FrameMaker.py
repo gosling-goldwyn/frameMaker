@@ -92,19 +92,22 @@ class FrameMaker:
 
         new_img[sh : sh + current_height, sw : sw + current_width] = current_img
 
+        if transposed_for_processing:
+            new_img = new_img.transpose(1, 0, 2)
+
         if self.mc:
             # メインカラーバーの計算は元の画像サイズを基準にする
-            pickwidth = int(self.width // 5)
-            pickheight = int((self.height * self.side_margin_ratio) // 30)
+            # 修正: new_imgの最終的な形状を考慮してpickwidthとpickheightを計算
+            # new_imgの形状は (height, width, color)
+            final_height, final_width, _ = new_img.shape
+            pickwidth = int(final_width // 5)
+            pickheight = int((final_height * self.side_margin_ratio) // 30)
             picker = getMainColorKmeans(self.org_img, pickwidth, pickheight)
 
             # カラーバーを新しい正方形画像の下部に中央揃えで配置
-            sw_for_color_bar = (target_side_length - pickwidth * 5) // 2
-            new_img[target_side_length - pickheight : target_side_length, sw_for_color_bar : sw_for_color_bar + pickwidth * 5] = (
+            sw_for_color_bar = (final_width - pickwidth * 5) // 2
+            new_img[final_height - pickheight : final_height, sw_for_color_bar : sw_for_color_bar + pickwidth * 5] = (
                 picker / 255
             )
-
-        if transposed_for_processing:
-            new_img = new_img.transpose(1, 0, 2)
 
         return (new_img * 255).astype(int)
