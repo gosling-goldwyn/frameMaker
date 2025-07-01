@@ -108,7 +108,7 @@ class API:
         self,
         inputdata: str,
         golden: bool,
-        black: bool,
+        bgcolor: str,
         rounded: bool,
         maincolor: bool,
         radius: int = DEFAULT_RADIUS,
@@ -131,7 +131,7 @@ class API:
             webimg = base64_string_to_pillow_image(inputdata)
             handler = ImageHandler(fp="", webimg=webimg)
             fm = FrameMaker(
-                handler, golden, black, rounded, maincolor, radius=radius, golden_ratio=GOLDEN_RATIO, side_margin_ratio=SIDE_MARGIN_RATIO
+                handler, golden, bgcolor, rounded, maincolor, radius=radius, golden_ratio=GOLDEN_RATIO, side_margin_ratio=SIDE_MARGIN_RATIO
             )
             result = fm.run()
         except ReadError:
