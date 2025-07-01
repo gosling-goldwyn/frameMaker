@@ -59,7 +59,11 @@ def test_frame_maker_golden_ratio_white_frame(sample_image_handler_tall):
     期待結果: 出力画像の縦横サイズが期待される黄金比に基づいたサイズであり、フレーム部分が白であること。
     """
     fm = FrameMaker(
-        sample_image_handler_tall, golden=True, bgcolor="#FFFFFF", rounded=False, mc=False
+        sample_image_handler_tall,
+        golden=True,
+        bgcolor="#FFFFFF",
+        rounded=False,
+        mc=False,
     )
     result_img = fm.run()
 
@@ -85,7 +89,11 @@ def test_frame_maker_golden_ratio_black_frame(sample_image_handler_wide):
     期待結果: 出力画像の縦横サイズが期待される黄金比に基づいたサイズであり、フレーム部分が黒であること。
     """
     fm = FrameMaker(
-        sample_image_handler_wide, golden=True, bgcolor="#000000", rounded=False, mc=False
+        sample_image_handler_wide,
+        golden=True,
+        bgcolor="#000000",
+        rounded=False,
+        mc=False,
     )
     result_img = fm.run()
 
@@ -134,7 +142,11 @@ def test_frame_maker_no_golden_ratio_black_frame(sample_image_handler_tall):
     期待結果: 出力画像の縦横サイズが元の画像の最大辺の長さであり、フレーム部分が黒であること。
     """
     fm = FrameMaker(
-        sample_image_handler_tall, golden=False, bgcolor="#000000", rounded=False, mc=False
+        sample_image_handler_tall,
+        golden=False,
+        bgcolor="#000000",
+        rounded=False,
+        mc=False,
     )
     result_img = fm.run()
 
@@ -191,7 +203,11 @@ def test_frame_maker_main_color_bar(sample_image_handler_colored):
     期待結果: 出力画像にカラーバーが追加され、その領域が完全に白ではないこと。
     """
     fm = FrameMaker(
-        sample_image_handler_colored, golden=False, bgcolor="#FFFFFF", rounded=False, mc=True
+        sample_image_handler_colored,
+        golden=False,
+        bgcolor="#FFFFFF",
+        rounded=False,
+        mc=True,
     )
     result_img = fm.run()
 
@@ -211,7 +227,11 @@ def test_frame_maker_rounded_and_main_color_bar(sample_image_handler_colored):
     期待結果: 出力画像の角が丸められ、カラーバーが追加され、その領域が完全に白ではないこと。
     """
     fm = FrameMaker(
-        sample_image_handler_colored, golden=False, bgcolor="#FFFFFF", rounded=True, mc=True
+        sample_image_handler_colored,
+        golden=False,
+        bgcolor="#FFFFFF",
+        rounded=True,
+        mc=True,
     )
     result_img = fm.run()
 
@@ -224,3 +244,20 @@ def test_frame_maker_rounded_and_main_color_bar(sample_image_handler_colored):
     # カラーバーの領域が完全に白ではないことを確認
     color_bar_area = result_img[result_img.shape[0] - expected_pick_height :, :]
     assert not np.all(color_bar_area == 255)
+
+
+def test_frame_maker_custom_background_color(sample_image_handler):
+    """
+    カスタム背景色が正しく適用されることを確認する。
+
+    テスト対象機能: FrameMakerのbgcolorオプション
+    期待結果: 出力画像のフレーム部分が指定された色（赤）であること。
+    """
+    fm = FrameMaker(
+        sample_image_handler, golden=True, bgcolor="#FF0000", rounded=False, mc=False
+    )
+    result_img = fm.run()
+
+    # フレーム部分が赤であることを確認（例：角のピクセル）
+    # OpenCVはBGR順なので、(0, 0, 255)が赤に対応
+    assert np.all(result_img[0, 0] == [0, 0, 255])
