@@ -7,8 +7,15 @@ from PIL import Image
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 
+from src.constants import GOLDEN_RATIO, MAX_FRAME_RATIO, MIN_FRAME_RATIO, SILVER_RATIO
 from src.FrameMaker import FrameMaker
 from src.ImageHandler import ImageHandler
+from src.WebviewInterface import (
+    API,
+    pillow_image_to_base64_string,
+    resolve_frame_ratio,
+    validate_frame_ratio,
+)
 
 
 @pytest.fixture
@@ -109,6 +116,97 @@ def test_frame_maker_golden_ratio_black_frame(sample_image_handler_wide):
     # フレーム部分が黒であることを確認（例：角のピクセル）
     assert np.all(result_img[0, 0] == 0)  # 左上
     assert np.all(result_img[-1, -1] == 0)  # 右下
+
+
+def test_frame_maker_silver_ratio_frame(sample_image_handler_wide):
+    """
+    横長の画像に対して、白銀比に基づいたフレームが正しく適用されることを確認する。
+    """
+    fm = FrameMaker(
+        sample_image_handler_wide,
+        golden=True,
+        bgcolor="#FFFFFF",
+        rounded=False,
+        mc=False,
+        golden_ratio=SILVER_RATIO,
+    )
+    result_img = fm.run()
+
+    expected_side_length = int(
+        max(sample_image_handler_wide.height, sample_image_handler_wide.width)
+        * SILVER_RATIO
+    )
+
+    assert result_img.shape[0] == expected_side_length
+    assert result_img.shape[1] == expected_side_length
+
+
+def test_frame_maker_custom_ratio_frame(sample_image_handler_wide):
+    """
+    任意比率に基づいたフレームが正しく適用されることを確認する。
+    """
+    custom_ratio = 1.333
+    fm = FrameMaker(
+        sample_image_handler_wide,
+        golden=True,
+        bgcolor="#FFFFFF",
+        rounded=False,
+        mc=False,
+        golden_ratio=custom_ratio,
+    )
+    result_img = fm.run()
+
+    expected_side_length = int(
+        max(sample_image_handler_wide.height, sample_image_handler_wide.width)
+        * custom_ratio
+    )
+
+    assert result_img.shape[0] == expected_side_length
+    assert result_img.shape[1] == expected_side_length
+
+
+def test_resolve_frame_ratio_modes():
+    assert resolve_frame_ratio("none") == (False, GOLDEN_RATIO)
+    assert resolve_frame_ratio("golden") == (True, GOLDEN_RATIO)
+    assert resolve_frame_ratio("silver") == (True, SILVER_RATIO)
+    assert resolve_frame_ratio(1.0) == (True, 1.0)
+    assert resolve_frame_ratio("1.333") == (True, 1.333)
+    assert resolve_frame_ratio(1.414) == (True, 1.414)
+    assert resolve_frame_ratio(1.618) == (True, 1.618)
+    assert resolve_frame_ratio(1.732) == (True, 1.732)
+    assert resolve_frame_ratio(True) == (True, GOLDEN_RATIO)
+    assert resolve_frame_ratio(False) == (False, GOLDEN_RATIO)
+
+
+def test_validate_frame_ratio_rejects_out_of_range_values():
+    assert validate_frame_ratio(MIN_FRAME_RATIO) == MIN_FRAME_RATIO
+    assert validate_frame_ratio(MAX_FRAME_RATIO) == MAX_FRAME_RATIO
+
+    with pytest.raises(ValueError):
+        validate_frame_ratio(0.999)
+
+    with pytest.raises(ValueError):
+        validate_frame_ratio(1.733)
+
+    with pytest.raises(ValueError):
+        resolve_frame_ratio("invalid")
+
+
+def test_save_frame_maker_from_webview(tmp_path, monkeypatch, sample_image_handler):
+    monkeypatch.setattr("src.WebviewInterface.Path.home", lambda: tmp_path)
+    img = Image.fromarray((sample_image_handler.org_img[:, :, ::-1] * 255).astype(np.uint8))
+    inputdata = "data:image/jpeg;base64," + pillow_image_to_base64_string(img)
+
+    save_path = API().saveFrameMakerFromWebview(
+        inputdata,
+        1.0,
+        "#FFFFFF",
+        False,
+        False,
+    )
+
+    assert save_path
+    assert os.path.exists(save_path)
 
 
 def test_frame_maker_no_golden_ratio_white_frame(sample_image_handler):

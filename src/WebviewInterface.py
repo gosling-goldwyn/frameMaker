@@ -1,17 +1,59 @@
 import base64
 import io
 import os
+from numbers import Real
 from pathlib import Path
 
 import cv2
 import numpy as np
 from PIL import Image
 
+from src.colorpick import getMainColorRGBValue
+from src.constants import (
+    DEFAULT_RADIUS,
+    GOLDEN_RATIO,
+    MAX_FRAME_RATIO,
+    MIN_FRAME_RATIO,
+    SIDE_MARGIN_RATIO,
+    SILVER_RATIO,
+)
 from src.Error import ReadError
 from src.FrameMaker import FrameMaker
 from src.ImageHandler import ImageHandler
-from src.colorpick import getMainColorRGBValue
-from src.constants import GOLDEN_RATIO, SIDE_MARGIN_RATIO, DEFAULT_RADIUS
+
+
+def validate_frame_ratio(frame_ratio: float) -> float:
+    ratio = float(frame_ratio)
+    if not MIN_FRAME_RATIO <= ratio <= MAX_FRAME_RATIO:
+        raise ValueError(
+            f"Frame ratio must be between {MIN_FRAME_RATIO} and {MAX_FRAME_RATIO}: "
+            f"{ratio}"
+        )
+    return ratio
+
+
+def resolve_frame_ratio(frame_mode) -> tuple[bool, float]:
+    """
+    フレーム比率モードを FrameMaker に渡す boolean と比率値に変換します。
+    既存の boolean 入力は後方互換のため Golden として扱います。
+    """
+    if isinstance(frame_mode, Real) and not isinstance(frame_mode, bool):
+        return True, validate_frame_ratio(frame_mode)
+
+    if isinstance(frame_mode, str):
+        mode = frame_mode.lower()
+        if mode in ("none", "false", "off", ""):
+            return False, GOLDEN_RATIO
+        if mode == "golden":
+            return True, GOLDEN_RATIO
+        if mode == "silver":
+            return True, SILVER_RATIO
+        try:
+            return True, validate_frame_ratio(float(mode))
+        except ValueError as exc:
+            raise ValueError(f"Unsupported frame ratio mode: {frame_mode}") from exc
+
+    return bool(frame_mode), GOLDEN_RATIO
 
 
 def pillow_image_to_base64_string(img: Image) -> str:
@@ -77,7 +119,7 @@ class API:
         self,
         inputpath: str,
         outputpath: str,
-        golden: bool,
+        golden: bool | str,
         black: bool,
         rounded: bool,
         maincolor: bool,
@@ -88,26 +130,36 @@ class API:
         Args:
             inputpath (str): 入力画像ファイルのパス。
             outputpath (str): 出力画像を保存するパス。
-            golden (bool): 黄金比フレームを適用するかどうか。
+            golden (bool | str): 比率フレームを適用するか、比率モード。
             black (bool): 黒いフレームを適用するかどうか。
             rounded (bool): 角丸フレームを適用するかどうか。
             maincolor (bool): メインカラーバーを追加するかどうか。
         """
         try:
             handler = ImageHandler(fp=inputpath.replace("blob:", ""))
+            use_ratio, frame_ratio = resolve_frame_ratio(golden)
+            bgcolor = "#000000" if black else "#FFFFFF"
             fm = FrameMaker(
-                handler, golden, black, rounded, maincolor, golden_ratio=GOLDEN_RATIO, side_margin_ratio=SIDE_MARGIN_RATIO
+                handler,
+                use_ratio,
+                bgcolor,
+                rounded,
+                maincolor,
+                golden_ratio=frame_ratio,
+                side_margin_ratio=SIDE_MARGIN_RATIO,
             )
             result = fm.run()
         except ReadError:
             print("Read Error: File doesn't exist (unsupported japanese characters)")
+        except ValueError as exc:
+            print(exc)
         else:
             handler.save_image(outputpath, result)
 
     def runFrameMakerFromWebview(
         self,
         inputdata: str,
-        golden: bool,
+        golden: bool | str,
         bgcolor: str,
         rounded: bool,
         maincolor: bool,
@@ -118,8 +170,8 @@ class API:
 
         Args:
             inputdata (str): Base64 エンコードされた入力画像データ。
-            golden (bool): 黄金比フレームを適用するかどうか。
-            black (bool): 黒いフレームを適用するかどうか。
+            golden (bool | str): 比率フレームを適用するか、比率モード。
+            bgcolor (str): フレームの背景色。
             rounded (bool): 角丸フレームを適用するかどうか。
             maincolor (bool): メインカラーバーを追加するかどうか。
             radius (int, optional): 角丸の半径。デフォルトは constants.DEFAULT_RADIUS。
@@ -130,12 +182,23 @@ class API:
         try:
             webimg = base64_string_to_pillow_image(inputdata)
             handler = ImageHandler(fp="", webimg=webimg)
+            use_ratio, frame_ratio = resolve_frame_ratio(golden)
             fm = FrameMaker(
-                handler, golden, bgcolor, rounded, maincolor, radius=radius, golden_ratio=GOLDEN_RATIO, side_margin_ratio=SIDE_MARGIN_RATIO
+                handler,
+                use_ratio,
+                bgcolor,
+                rounded,
+                maincolor,
+                radius=radius,
+                golden_ratio=frame_ratio,
+                side_margin_ratio=SIDE_MARGIN_RATIO,
             )
             result = fm.run()
         except ReadError:
             print("Read Error: File doesn't exist (unsupported japanese characters)")
+            return ""
+        except ValueError as exc:
+            print(exc)
             return ""
         else:
             result = cv2.cvtColor(result.astype(np.uint8), cv2.COLOR_BGR2RGB)
@@ -158,6 +221,42 @@ class API:
         downloads_path.mkdir(parents=True, exist_ok=True) # Ensure directory exists
         save_path = get_save_path("output.jpg", str(downloads_path))
         webimg.save(save_path, "JPEG", quality=95)
+
+    def saveFrameMakerFromWebview(
+        self,
+        inputdata: str,
+        golden: bool | str,
+        bgcolor: str,
+        rounded: bool,
+        maincolor: bool,
+        radius: int = DEFAULT_RADIUS,
+    ) -> str:
+        """
+        Base64 エンコードされた画像データにフレーム処理を適用し、Downloads に保存します。
+        """
+        try:
+            webimg = base64_string_to_pillow_image(inputdata)
+            handler = ImageHandler(fp="", webimg=webimg)
+            use_ratio, frame_ratio = resolve_frame_ratio(golden)
+            fm = FrameMaker(
+                handler,
+                use_ratio,
+                bgcolor,
+                rounded,
+                maincolor,
+                radius=radius,
+                golden_ratio=frame_ratio,
+                side_margin_ratio=SIDE_MARGIN_RATIO,
+            )
+            result = fm.run()
+            downloads_path = Path.home() / "Downloads"
+            downloads_path.mkdir(parents=True, exist_ok=True)
+            save_path = get_save_path("output.jpg", str(downloads_path))
+            handler.save_image(save_path, result)
+            return save_path
+        except (ReadError, ValueError) as exc:
+            print(exc)
+            return ""
 
     def getMainColorRGBValue(
         self,

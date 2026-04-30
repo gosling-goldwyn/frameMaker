@@ -1,8 +1,42 @@
+import os
+
 import cv2
 import numpy as np
-from sklearn.cluster import KMeans
 
-from src.constants import KMEANS_CLUSTERS, SATURATION_THRESHOLD, BRIGHTNESS_THRESHOLD
+from src.constants import BRIGHTNESS_THRESHOLD, KMEANS_CLUSTERS, SATURATION_THRESHOLD
+
+os.environ.setdefault("LOKY_MAX_CPU_COUNT", "1")
+
+
+def _create_kmeans(n_clusters: int):
+    from sklearn.cluster import KMeans
+
+    return KMeans(n_clusters=n_clusters, random_state=0, n_init=10)
+
+
+def _get_cluster_centers(filtered_pixels: np.ndarray) -> np.ndarray:
+    if filtered_pixels.size == 0:
+        filtered_pixels = np.zeros((1, 3))
+
+    unique_pixel_count = len(np.unique(filtered_pixels, axis=0))
+    cluster_count = min(KMEANS_CLUSTERS, unique_pixel_count)
+
+    cluster = _create_kmeans(cluster_count)
+    cluster.fit(filtered_pixels)
+
+    cluster_centers_arr = cluster.cluster_centers_ * 255
+    cluster_centers_arr = cluster_centers_arr.astype("int")
+
+    if cluster_count < KMEANS_CLUSTERS:
+        padding = np.repeat(
+            cluster_centers_arr[-1:],
+            KMEANS_CLUSTERS - cluster_count,
+            axis=0,
+        )
+        cluster_centers_arr = np.vstack([cluster_centers_arr, padding])
+
+    return cluster_centers_arr
+
 
 def _get_filtered_pixels(img: np.ndarray) -> np.ndarray:
     """
@@ -45,11 +79,7 @@ def getMainColorKmeans(img: np.ndarray, width: int, height: int) -> np.ndarray:
     """
     filtered_pixels = _get_filtered_pixels(img)
 
-    cluster = KMeans(n_clusters=KMEANS_CLUSTERS, random_state=0, n_init=10)
-    cluster.fit(filtered_pixels)
-
-    cluster_centers_arr = cluster.cluster_centers_ * 255
-    cluster_centers_arr = cluster_centers_arr.astype("int")
+    cluster_centers_arr = _get_cluster_centers(filtered_pixels)
 
     hsv_centers = cv2.cvtColor(np.uint8([cluster_centers_arr]), cv2.COLOR_RGB2HSV)[0]
 
@@ -83,10 +113,6 @@ def getMainColorRGBValue(img: np.ndarray) -> list[str]:
     """
     filtered_pixels = _get_filtered_pixels(img)
 
-    cluster = KMeans(n_clusters=KMEANS_CLUSTERS, random_state=0, n_init=10)
-    cluster.fit(filtered_pixels)
-
-    cluster_centers_arr = cluster.cluster_centers_ * 255
-    cluster_centers_arr = cluster_centers_arr.astype("int")
+    cluster_centers_arr = _get_cluster_centers(filtered_pixels)
 
     return [f"{e[0]:02x}{e[1]:02x}{e[2]:02x}" for e in cluster_centers_arr.tolist()]

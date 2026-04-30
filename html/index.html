@@ -5,8 +5,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Frame Maker</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%232a323c'/%3E%3Crect x='3' y='3' width='10' height='10' fill='none' stroke='%23ffffff' stroke-width='2'/%3E%3C/svg%3E">
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #preview-frame {
+            --frame-bg: #FFFFFF;
+            --frame-ratio: 1;
+            --image-size: 100%;
+            --image-radius: 0px;
+            aspect-ratio: 1 / 1;
+            background: var(--frame-bg);
+            position: relative;
+            width: min(70vh, 100%);
+            max-width: 720px;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+        }
+
+        #preview-image {
+            max-width: var(--image-size);
+            max-height: var(--image-size);
+            object-fit: contain;
+            border-radius: var(--image-radius);
+        }
+
+        #maincolor-preview {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2%;
+            display: none;
+        }
+
+        #maincolor-preview.active {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+        }
+    </style>
 </head>
 
 <body class="bg-base-200 text-base-content min-h-screen overflow-hidden">
@@ -23,12 +61,22 @@
                                 id="inputpath" />
                         </div>
                         <div class="flex p-4">
-                            <div class="flex items-center h-5">
-                                <input type="checkbox" id="golden" name="golden" class="checkbox checkbox-primary">
-                            </div>
-                            <div class="ms-2 text-sm">
-                                <label for="golden">Golden</label>
-                                <p class="text-xs text-base-content">上下左右の余白を黄金比にします</p>
+                            <div class="form-control w-full max-w-md">
+                                <div class="flex justify-between items-center">
+                                    <label for="frame-ratio" class="label-text">Frame Ratio</label>
+                                    <span id="frame-ratio-value" class="text-sm font-mono">1.000</span>
+                                </div>
+                                <div class="grid grid-cols-6 gap-1 text-xs mt-2">
+                                    <button type="button" class="btn btn-xs" data-ratio="1.000">等倍</button>
+                                    <button type="button" class="btn btn-xs" data-ratio="1.333">4:3</button>
+                                    <button type="button" class="btn btn-xs" data-ratio="1.414">白銀比</button>
+                                    <button type="button" class="btn btn-xs" data-ratio="1.500">3:2</button>
+                                    <button type="button" class="btn btn-xs" data-ratio="1.618">黄金比</button>
+                                    <button type="button" class="btn btn-xs" data-ratio="1.732">√3</button>
+                                </div>
+                                <input type="range" id="frame-ratio" min="1.000" max="1.732" step="0.001" value="1.000"
+                                    class="range range-primary range-sm mt-3">
+                                <p id="frame-ratio-error" class="text-xs text-error min-h-4 mt-1"></p>
                             </div>
                         </div>
                         <div class="flex p-4">
@@ -66,16 +114,18 @@
                             </div>
                         </div>
 
-                        <button class="btn btn-primary my-4 mx-4" onclick="callPythonFunction()">Run</button>
                         <button class="btn btn-primary my-4 mx-4" onclick="saveImage()" disabled
                             id="saveButton">Save</button>
-                        <p class="text-xs my-4mx-4">※画像はユーザーのダウンロードフォルダに保存されます</p>
+                        <p id="save-status" class="text-xs my-4 mx-4 min-h-4">※画像はユーザーのダウンロードフォルダに保存されます</p>
                     </div>
 
                     <div class=" col-start-2 flex justify-center items-center">
                         <span id="spinner" class="loading loading-bars loading-lg hidden"></span>
-                        <img id="output-image" src=".\images\imagesmode_500dp_5F6368_FILL0_wght400_GRAD0_opsz48.png"
-                            alt="Output Image" class="mt-4">
+                        <div id="preview-frame" class="shadow-lg">
+                            <img id="preview-image" src=".\images\imagesmode_500dp_5F6368_FILL0_wght400_GRAD0_opsz48.png"
+                                alt="Preview Image">
+                            <div id="maincolor-preview"></div>
+                        </div>
                     </div>
                 </div>
             </div>

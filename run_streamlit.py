@@ -1,12 +1,13 @@
-import os
-import io
 import base64
+import io
+import os
+
 import streamlit as st
-from PIL import Image
-import numpy as np
-from src.WebviewInterface import API
 from dotenv import load_dotenv
-from src.colorpick import getMainColorRGBValue
+from PIL import Image
+
+from src.constants import MAX_FRAME_RATIO, MIN_FRAME_RATIO
+from src.WebviewInterface import API
 
 # 環境変数をロード
 load_dotenv(dotenv_path="./.env")
@@ -34,7 +35,19 @@ uploaded_file = st.sidebar.file_uploader(
 
 # サイドバーでオプションを選択
 st.sidebar.header("オプション設定")
-golden = st.sidebar.checkbox("Golden", help="上下左右の余白を黄金比にします")
+frame_ratio = st.sidebar.slider(
+    "Frame Ratio",
+    min_value=MIN_FRAME_RATIO,
+    max_value=MAX_FRAME_RATIO,
+    value=MIN_FRAME_RATIO,
+    step=0.001,
+    format="%.3f",
+    help="等倍 1.000 / 4:3 1.333 / 白銀比 1.414 / 3:2 1.500 / 黄金比 1.618 / √3 1.732",
+)
+st.sidebar.caption(
+    "指標: 等倍 1.000, 4:3 1.333, 白銀比 1.414, 3:2 1.500, "
+    "黄金比 1.618, √3 1.732"
+)
 radius = st.sidebar.slider(
     "Radius", min_value=0, value=0, max_value=200, help="画像の角を丸くします"
 )
@@ -79,7 +92,7 @@ if uploaded_file:
             # APIを呼び出して画像を処理
             result_data_url = api.runFrameMakerFromWebview(
                 img_data_url,
-                golden,
+                frame_ratio,
                 bgcolor_to_pass,
                 True if radius > 0 else False,
                 maincolor,

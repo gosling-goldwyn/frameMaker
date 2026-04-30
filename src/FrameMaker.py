@@ -2,8 +2,8 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from src.colorpick import getMainColorKmeans
+from src.constants import DEFAULT_RADIUS, GOLDEN_RATIO, SIDE_MARGIN_RATIO
 from src.ImageHandler import ImageHandler
-from src.constants import GOLDEN_RATIO, SIDE_MARGIN_RATIO, DEFAULT_RADIUS
 
 
 class FrameMaker:
@@ -28,12 +28,12 @@ class FrameMaker:
 
         Args:
             hdl (ImageHandler): 処理する画像を含む ImageHandler オブジェクト。
-            golden (bool): 黄金比フレームを適用するかどうか。
-            black (bool): 黒いフレームを適用するかどうか (False の場合は白いフレーム)。
+            golden (bool): 比率フレームを適用するかどうか。
+            bgcolor (str): フレームの背景色。
             rounded (bool): 角丸フレームを適用するかどうか。
             mc (bool): メインカラーバーを追加するかどうか。
             radius (int, optional): 角丸の半径。デフォルトは constants.DEFAULT_RADIUS。
-            golden_ratio (float, optional): 黄金比の値。デフォルトは constants.GOLDEN_RATIO。
+            golden_ratio (float, optional): フレーム比率の値。デフォルトは constants.GOLDEN_RATIO。
             side_margin_ratio (float, optional): サイドマージンの比率。デフォルトは constants.SIDE_MARGIN_RATIO。
         """
         self.img = hdl.img
@@ -52,7 +52,7 @@ class FrameMaker:
         self.is_width_base = False
         self.golden_ratio = golden_ratio
         self.side_margin_ratio = side_margin_ratio
-        
+
         self.roundmask = None
         if self.rounded:
             mask = Image.new("L", (self.width, self.height), 0)
