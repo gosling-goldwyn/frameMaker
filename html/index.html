@@ -12,7 +12,8 @@
         #preview-frame {
             --frame-bg: #FFFFFF;
             --frame-ratio: 1;
-            --image-size: 100%;
+            --image-width: 100%;
+            --image-height: 100%;
             --image-radius: 0px;
             aspect-ratio: 1 / 1;
             background: var(--frame-bg);
@@ -25,8 +26,8 @@
         }
 
         #preview-image {
-            max-width: var(--image-size);
-            max-height: var(--image-size);
+            width: var(--image-width);
+            height: var(--image-height);
             object-fit: contain;
             border-radius: var(--image-radius);
         }
@@ -95,12 +96,13 @@
                             </div>
                         </div>
                         <div class="flex p-4">
-                            <div class="flex items-center h-5">
-                                <input type="checkbox" id="rounded" name="rounded" class="checkbox checkbox-primary">
-                                <div class="ms-2 text-sm">
-                                    <label class="label-text">Rounded</label>
-                                    <p class="text-xs text-base-content">画像の角を丸くします</p>
+                            <div class="form-control w-full max-w-md">
+                                <div class="flex justify-between items-center">
+                                    <label for="corner-radius" class="label-text">Corner Radius</label>
+                                    <span id="corner-radius-value" class="text-sm font-mono">0 px</span>
                                 </div>
+                                <input type="range" id="corner-radius" min="0" max="200" step="1" value="0"
+                                    class="range range-primary range-sm mt-3">
                             </div>
                         </div>
                         <div class="flex p-4">
@@ -116,7 +118,7 @@
 
                         <button class="btn btn-primary my-4 mx-4" onclick="saveImage()" disabled
                             id="saveButton">Save</button>
-                        <p id="save-status" class="text-xs my-4 mx-4 min-h-4">※画像はユーザーのダウンロードフォルダに保存されます</p>
+                        <p id="save-status" class="text-xs my-4 mx-4 min-h-4">保存時に保存先を選択します</p>
                     </div>
 
                     <div class=" col-start-2 flex justify-center items-center">

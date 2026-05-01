@@ -192,12 +192,34 @@ def test_validate_frame_ratio_rejects_out_of_range_values():
         resolve_frame_ratio("invalid")
 
 
-def test_save_frame_maker_from_webview(tmp_path, monkeypatch, sample_image_handler):
-    monkeypatch.setattr("src.WebviewInterface.Path.home", lambda: tmp_path)
+class FakeSaveWindow:
+    def __init__(self, save_path):
+        self.save_path = save_path
+
+    def create_file_dialog(self, *args, **kwargs):
+        return (str(self.save_path),)
+
+
+class FakeCancelWindow:
+    def create_file_dialog(self, *args, **kwargs):
+        return None
+
+
+def test_api_does_not_expose_public_window_attribute():
+    api = API()
+    api.set_window(FakeCancelWindow())
+
+    assert not hasattr(api, "window")
+
+
+def test_save_frame_maker_from_webview_with_dialog(tmp_path, sample_image_handler):
+    save_target = tmp_path / "selected-output.jpg"
     img = Image.fromarray((sample_image_handler.org_img[:, :, ::-1] * 255).astype(np.uint8))
     inputdata = "data:image/jpeg;base64," + pillow_image_to_base64_string(img)
+    api = API()
+    api.set_window(FakeSaveWindow(save_target))
 
-    save_path = API().saveFrameMakerFromWebview(
+    save_path = api.saveFrameMakerFromWebview(
         inputdata,
         1.0,
         "#FFFFFF",
@@ -206,7 +228,88 @@ def test_save_frame_maker_from_webview(tmp_path, monkeypatch, sample_image_handl
     )
 
     assert save_path
-    assert os.path.exists(save_path)
+    assert save_path == str(save_target)
+    assert os.path.exists(save_target)
+
+
+def test_save_frame_maker_from_webview_with_radius(tmp_path, sample_image_handler):
+    save_target = tmp_path / "selected-output.jpg"
+    img = Image.fromarray((sample_image_handler.org_img[:, :, ::-1] * 255).astype(np.uint8))
+    inputdata = "data:image/jpeg;base64," + pillow_image_to_base64_string(img)
+    api = API()
+    api.set_window(FakeSaveWindow(save_target))
+
+    save_path = api.saveFrameMakerFromWebview(
+        inputdata,
+        1.0,
+        "#FFFFFF",
+        True,
+        False,
+        radius=80,
+    )
+
+    assert save_path == str(save_target)
+    assert os.path.exists(save_target)
+
+
+def test_save_frame_maker_from_webview_cancel(tmp_path, sample_image_handler):
+    img = Image.fromarray((sample_image_handler.org_img[:, :, ::-1] * 255).astype(np.uint8))
+    inputdata = "data:image/jpeg;base64," + pillow_image_to_base64_string(img)
+    api = API()
+    api.set_window(FakeCancelWindow())
+
+    save_path = api.saveFrameMakerFromWebview(
+        inputdata,
+        1.0,
+        "#FFFFFF",
+        False,
+        False,
+    )
+
+    assert save_path == "cancelled"
+    assert not list(tmp_path.iterdir())
+
+
+def test_save_frame_maker_from_webview_adds_jpg_extension(
+    tmp_path, sample_image_handler
+):
+    save_target = tmp_path / "selected-output"
+    img = Image.fromarray((sample_image_handler.org_img[:, :, ::-1] * 255).astype(np.uint8))
+    inputdata = "data:image/jpeg;base64," + pillow_image_to_base64_string(img)
+    api = API()
+    api.set_window(FakeSaveWindow(save_target))
+
+    save_path = api.saveFrameMakerFromWebview(
+        inputdata,
+        1.0,
+        "#FFFFFF",
+        False,
+        False,
+    )
+
+    assert save_path == str(save_target.with_suffix(".jpg"))
+    assert os.path.exists(save_target.with_suffix(".jpg"))
+
+
+def test_save_frame_maker_from_webview_replaces_unsupported_extension(
+    tmp_path, sample_image_handler
+):
+    save_target = tmp_path / "selected-output.gif"
+    img = Image.fromarray((sample_image_handler.org_img[:, :, ::-1] * 255).astype(np.uint8))
+    inputdata = "data:image/jpeg;base64," + pillow_image_to_base64_string(img)
+    api = API()
+    api.set_window(FakeSaveWindow(save_target))
+
+    save_path = api.saveFrameMakerFromWebview(
+        inputdata,
+        1.0,
+        "#FFFFFF",
+        False,
+        False,
+    )
+
+    assert save_path == str(save_target.with_suffix(".jpg"))
+    assert os.path.exists(save_target.with_suffix(".jpg"))
 
 
 def test_frame_maker_no_golden_ratio_white_frame(sample_image_handler):

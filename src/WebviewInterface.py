@@ -6,6 +6,7 @@ from pathlib import Path
 
 import cv2
 import numpy as np
+import webview
 from PIL import Image
 
 from src.colorpick import getMainColorRGBValue
@@ -115,6 +116,69 @@ class API:
     画像処理機能へのアクセスを提供します。
     """
 
+    def __init__(self):
+        self._window = None
+
+    def set_window(self, window) -> None:
+        self._window = window
+
+    def _choose_save_path(self) -> str | None:
+        if self._window is None:
+            downloads_path = Path.home() / "Downloads"
+            downloads_path.mkdir(parents=True, exist_ok=True)
+            return get_save_path("output.jpg", str(downloads_path))
+
+        result = self._window.create_file_dialog(
+            webview.SAVE_DIALOG,
+            save_filename="output.jpg",
+            file_types=(
+                "JPEG Images (*.jpg;*.jpeg)",
+                "PNG Images (*.png)",
+                "All files (*.*)",
+            ),
+        )
+        if not result:
+            return None
+        if isinstance(result, list | tuple):
+            return result[0] if result else None
+        return result
+
+    @staticmethod
+    def _normalize_save_path(save_path: str) -> str:
+        path = Path(save_path)
+        if path.suffix.lower() in (".jpg", ".jpeg", ".png"):
+            return str(path)
+        return str(path.with_suffix(".jpg"))
+
+    def _save_frame_maker_to_path(
+        self,
+        inputdata: str,
+        golden: bool | str,
+        bgcolor: str,
+        rounded: bool,
+        maincolor: bool,
+        save_path: str,
+        radius: int = DEFAULT_RADIUS,
+    ) -> str:
+        webimg = base64_string_to_pillow_image(inputdata)
+        handler = ImageHandler(fp="", webimg=webimg)
+        use_ratio, frame_ratio = resolve_frame_ratio(golden)
+        fm = FrameMaker(
+            handler,
+            use_ratio,
+            bgcolor,
+            rounded,
+            maincolor,
+            radius=radius,
+            golden_ratio=frame_ratio,
+            side_margin_ratio=SIDE_MARGIN_RATIO,
+        )
+        result = fm.run()
+        normalized_path = self._normalize_save_path(save_path)
+        Path(normalized_path).parent.mkdir(parents=True, exist_ok=True)
+        handler.save_image(normalized_path, result)
+        return normalized_path
+
     def runFrameMaker(
         self,
         inputpath: str,
@@ -218,7 +282,7 @@ class API:
         webimg = base64_string_to_pillow_image(inputdata)
         # Use pathlib for cross-platform path handling
         downloads_path = Path.home() / "Downloads"
-        downloads_path.mkdir(parents=True, exist_ok=True) # Ensure directory exists
+        downloads_path.mkdir(parents=True, exist_ok=True)  # Ensure directory exists
         save_path = get_save_path("output.jpg", str(downloads_path))
         webimg.save(save_path, "JPEG", quality=95)
 
@@ -232,28 +296,21 @@ class API:
         radius: int = DEFAULT_RADIUS,
     ) -> str:
         """
-        Base64 エンコードされた画像データにフレーム処理を適用し、Downloads に保存します。
+        Base64 エンコードされた画像データにフレーム処理を適用し、選択先に保存します。
         """
         try:
-            webimg = base64_string_to_pillow_image(inputdata)
-            handler = ImageHandler(fp="", webimg=webimg)
-            use_ratio, frame_ratio = resolve_frame_ratio(golden)
-            fm = FrameMaker(
-                handler,
-                use_ratio,
+            save_path = self._choose_save_path()
+            if not save_path:
+                return "cancelled"
+            return self._save_frame_maker_to_path(
+                inputdata,
+                golden,
                 bgcolor,
                 rounded,
                 maincolor,
+                save_path,
                 radius=radius,
-                golden_ratio=frame_ratio,
-                side_margin_ratio=SIDE_MARGIN_RATIO,
             )
-            result = fm.run()
-            downloads_path = Path.home() / "Downloads"
-            downloads_path.mkdir(parents=True, exist_ok=True)
-            save_path = get_save_path("output.jpg", str(downloads_path))
-            handler.save_image(save_path, result)
-            return save_path
         except (ReadError, ValueError) as exc:
             print(exc)
             return ""

@@ -9,7 +9,46 @@ const state = {
     inputDataUrl: "",
     objectUrl: "",
     mainColors: [],
+    imageWidth: 0,
+    imageHeight: 0,
 };
+
+async function loadImageSize(src) {
+    const image = new Image();
+    image.src = src;
+    await new Promise((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error("Failed to load preview image"));
+    });
+    return {
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+    };
+}
+
+function getPreviewImageSize(frameRatio) {
+    if (!state.imageWidth || !state.imageHeight) {
+        return {
+            width: 100 / frameRatio,
+            height: 100 / frameRatio,
+        };
+    }
+
+    const imageRatio = state.imageWidth / state.imageHeight;
+    if (state.imageWidth >= state.imageHeight) {
+        const width = 100 / frameRatio;
+        return {
+            width,
+            height: width / imageRatio,
+        };
+    }
+
+    const height = 100 / frameRatio;
+    return {
+        width: height * imageRatio,
+        height,
+    };
+}
 
 function validateFrameRatio() {
     const ratioInput = document.getElementById("frame-ratio");
@@ -31,25 +70,30 @@ function validateFrameRatio() {
 }
 
 function getCurrentOptions() {
+    const radius = Number(document.getElementById("corner-radius").value);
     return {
         frameRatio: Number(document.getElementById("frame-ratio").value),
         bgcolor: document.querySelector('input[name="bgcolor"]:checked').value,
-        rounded: document.getElementById("rounded").checked,
+        rounded: radius > 0,
         maincolor: document.getElementById("maincolor").checked,
+        radius,
     };
 }
 
 function renderPreview() {
-    const { frameRatio, bgcolor, rounded, maincolor } = getCurrentOptions();
+    const { frameRatio, bgcolor, maincolor, radius } = getCurrentOptions();
     const previewFrame = document.getElementById("preview-frame");
     const previewImage = document.getElementById("preview-image");
     const colorBar = document.getElementById("maincolor-preview");
     const saveButton = document.getElementById("saveButton");
+    const imageSize = getPreviewImageSize(frameRatio);
 
     previewFrame.style.setProperty("--frame-bg", bgcolor);
     previewFrame.style.setProperty("--frame-ratio", frameRatio);
-    previewFrame.style.setProperty("--image-size", `${100 / frameRatio}%`);
-    previewFrame.style.setProperty("--image-radius", rounded ? "8%" : "0px");
+    previewFrame.style.setProperty("--image-width", `${imageSize.width}%`);
+    previewFrame.style.setProperty("--image-height", `${imageSize.height}%`);
+    previewFrame.style.setProperty("--image-radius", `${radius}px`);
+    document.getElementById("corner-radius-value").innerText = `${radius} px`;
 
     if (state.objectUrl) {
         previewImage.src = state.objectUrl;
@@ -69,7 +113,7 @@ function renderPreview() {
 
     saveButton.disabled = !state.inputDataUrl;
     saveButton.innerText = "Save";
-    document.getElementById("save-status").innerText = "※画像はユーザーのダウンロードフォルダに保存されます";
+    document.getElementById("save-status").innerText = "保存時に保存先を選択します";
 }
 
 document.getElementById("frame-ratio").addEventListener("input", validateFrameRatio);
@@ -93,6 +137,9 @@ document.getElementById('inputpath').addEventListener('change', async (event) =>
         URL.revokeObjectURL(state.objectUrl);
     }
     state.objectUrl = URL.createObjectURL(input);
+    const imageSize = await loadImageSize(state.objectUrl);
+    state.imageWidth = imageSize.width;
+    state.imageHeight = imageSize.height;
     renderPreview();
 
     const colors = await window.pywebview.api.getMainColorRGBValue(inputdata);
@@ -128,9 +175,10 @@ document.getElementById('inputpath').addEventListener('change', async (event) =>
     renderPreview();
 });
 
-["rounded", "maincolor"].forEach((id) => {
+["corner-radius", "maincolor"].forEach((id) => {
     document.getElementById(id).addEventListener("change", renderPreview);
 });
+document.getElementById("corner-radius").addEventListener("input", renderPreview);
 document.getElementById("color-options").addEventListener("change", renderPreview);
 
 async function saveImage() {
@@ -139,7 +187,7 @@ async function saveImage() {
     const saveButton = document.getElementById('saveButton');
     const spinner = document.getElementById('spinner');
     const status = document.getElementById("save-status");
-    const { frameRatio, bgcolor, rounded, maincolor } = getCurrentOptions();
+    const { frameRatio, bgcolor, maincolor, radius } = getCurrentOptions();
 
     saveButton.disabled = true;
     saveButton.innerText = "Saving...";
@@ -149,13 +197,17 @@ async function saveImage() {
         state.inputDataUrl,
         frameRatio,
         bgcolor,
-        rounded,
-        maincolor
+        radius > 0,
+        maincolor,
+        radius
     );
 
     spinner.classList.add('hidden');
     saveButton.disabled = false;
-    if (response) {
+    if (response === "cancelled") {
+        saveButton.innerText = "Save";
+        status.innerText = "保存をキャンセルしました";
+    } else if (response) {
         saveButton.innerText = "Saved!";
         status.innerText = `保存しました: ${response}`;
     } else {

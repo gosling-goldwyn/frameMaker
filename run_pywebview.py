@@ -12,7 +12,7 @@ logging.getLogger("webview.http").setLevel(logging.ERROR)
 DEBUG = os.getenv("DEBUG", "false").lower() == "true"
 
 api = API()
-webview.create_window(
+window = webview.create_window(
     "Frame Maker",
     "./html/index.html",
     width=1080,
@@ -20,4 +20,5 @@ webview.create_window(
     js_api=api,
     min_size=(600, 550),
 )
+api.set_window(window)
 webview.start(http_server=True, debug=DEBUG)
