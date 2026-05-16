@@ -23,6 +23,7 @@ dev = [
     "pyinstaller>=6.11.1",
     "ruff>=0.7.1",
     "pytest>=8.4.0",
+    "playwright>=1.59.0",
 ]
 
 
@@ -64,3 +65,7 @@ keep-runtime-typing = true
 
 [tool.pytest.ini_options]
 norecursedirs = ["tests/specification"]
+markers = [
+    "e2e: marks tests that require pywebview + WebView2 CDP integration",
+    "web: marks browser-only tests for the static HTML app",
+]

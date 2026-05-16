@@ -50,7 +50,7 @@
 
 <body class="bg-base-200 text-base-content min-h-screen overflow-hidden">
     <div class="navbar bg-neutral text-neutral-content">
-        <h1 class="text-2xl">Frame Maker</h1>
+        <h1 class="text-2xl" data-testid="app-title">Frame Maker</h1>
     </div>
     <main class="p-8">
         <section class="mb-4">
@@ -59,37 +59,37 @@
                     <div class="col-start-1">
                         <div class="form-control">
                             <input type="file" class="file-input file-input-bordered file-input-sm w-full max-w-xs"
-                                id="inputpath" />
+                                id="inputpath" data-testid="input-file" />
                         </div>
                         <div class="flex p-4">
                             <div class="form-control w-full max-w-md">
                                 <div class="flex justify-between items-center">
                                     <label for="frame-ratio" class="label-text">Frame Ratio</label>
-                                    <span id="frame-ratio-value" class="text-sm font-mono">1.000</span>
+                                    <span id="frame-ratio-value" class="text-sm font-mono" data-testid="frame-ratio-value">1.000</span>
                                 </div>
                                 <div class="grid grid-cols-6 gap-1 text-xs mt-2">
-                                    <button type="button" class="btn btn-xs" data-ratio="1.000">等倍</button>
-                                    <button type="button" class="btn btn-xs" data-ratio="1.333">4:3</button>
-                                    <button type="button" class="btn btn-xs" data-ratio="1.414">白銀比</button>
-                                    <button type="button" class="btn btn-xs" data-ratio="1.500">3:2</button>
-                                    <button type="button" class="btn btn-xs" data-ratio="1.618">黄金比</button>
-                                    <button type="button" class="btn btn-xs" data-ratio="1.732">√3</button>
+                                    <button type="button" class="btn btn-xs" data-ratio="1.000" data-testid="ratio-preset-1-000">等倍</button>
+                                    <button type="button" class="btn btn-xs" data-ratio="1.333" data-testid="ratio-preset-1-333">4:3</button>
+                                    <button type="button" class="btn btn-xs" data-ratio="1.414" data-testid="ratio-preset-1-414">白銀比</button>
+                                    <button type="button" class="btn btn-xs" data-ratio="1.500" data-testid="ratio-preset-1-500">3:2</button>
+                                    <button type="button" class="btn btn-xs" data-ratio="1.618" data-testid="ratio-preset-1-618">黄金比</button>
+                                    <button type="button" class="btn btn-xs" data-ratio="1.732" data-testid="ratio-preset-1-732">√3</button>
                                 </div>
                                 <input type="range" id="frame-ratio" min="1.000" max="1.732" step="0.001" value="1.000"
-                                    class="range range-primary range-sm mt-3">
-                                <p id="frame-ratio-error" class="text-xs text-error min-h-4 mt-1"></p>
+                                    class="range range-primary range-sm mt-3" data-testid="frame-ratio-slider">
+                                <p id="frame-ratio-error" class="text-xs text-error min-h-4 mt-1" data-testid="frame-ratio-error"></p>
                             </div>
                         </div>
                         <div class="flex p-4">
                             <div class="flex flex-col items-start h-auto">
-                                <div id="color-options">
+                                <div id="color-options" data-testid="color-options">
                                     <label class="label-text">背景色</label>
                                     <div class="flex items-center">
-                                        <input type="radio" id="white" name="bgcolor" value="#FFFFFF" class="radio radio-primary" checked>
+                                        <input type="radio" id="white" name="bgcolor" value="#FFFFFF" class="radio radio-primary" data-testid="bg-white" checked>
                                         <label for="white" class="ml-2">White</label>
                                     </div>
                                     <div class="flex items-center">
-                                        <input type="radio" id="black" name="bgcolor" value="#000000" class="radio radio-primary">
+                                        <input type="radio" id="black" name="bgcolor" value="#000000" class="radio radio-primary" data-testid="bg-black">
                                         <label for="black" class="ml-2">Black</label>
                                     </div>
                                 </div>
@@ -99,16 +99,16 @@
                             <div class="form-control w-full max-w-md">
                                 <div class="flex justify-between items-center">
                                     <label for="corner-radius" class="label-text">Corner Radius</label>
-                                    <span id="corner-radius-value" class="text-sm font-mono">0 px</span>
+                                    <span id="corner-radius-value" class="text-sm font-mono" data-testid="corner-radius-value">0 px</span>
                                 </div>
                                 <input type="range" id="corner-radius" min="0" max="200" step="1" value="0"
-                                    class="range range-primary range-sm mt-3">
+                                    class="range range-primary range-sm mt-3" data-testid="corner-radius-slider">
                             </div>
                         </div>
                         <div class="flex p-4">
                             <div class="flex items-center h-5">
                                 <input type="checkbox" id="maincolor" name="maincolor"
-                                    class="checkbox checkbox-primary">
+                                    class="checkbox checkbox-primary" data-testid="maincolor-toggle">
                                 <div class="ms-2 text-sm">
                                     <label class="label-text">MainColor</label>
                                     <p class="text-xs text-base-content">画像の最下部に特徴色をつけます</p>
@@ -117,16 +117,16 @@
                         </div>
 
                         <button class="btn btn-primary my-4 mx-4" onclick="saveImage()" disabled
-                            id="saveButton">Save</button>
-                        <p id="save-status" class="text-xs my-4 mx-4 min-h-4">保存時に保存先を選択します</p>
+                            id="saveButton" data-testid="save-button">Save</button>
+                        <p id="save-status" class="text-xs my-4 mx-4 min-h-4" data-testid="save-status">保存時に保存先を選択します</p>
                     </div>
 
                     <div class=" col-start-2 flex justify-center items-center">
-                        <span id="spinner" class="loading loading-bars loading-lg hidden"></span>
-                        <div id="preview-frame" class="shadow-lg">
+                        <span id="spinner" class="loading loading-bars loading-lg hidden" data-testid="save-spinner"></span>
+                        <div id="preview-frame" class="shadow-lg" data-testid="preview-frame">
                             <img id="preview-image" src=".\images\imagesmode_500dp_5F6368_FILL0_wght400_GRAD0_opsz48.png"
-                                alt="Preview Image">
-                            <div id="maincolor-preview"></div>
+                                alt="Preview Image" data-testid="preview-image">
+                            <div id="maincolor-preview" data-testid="maincolor-preview"></div>
                         </div>
                     </div>
                 </div>
