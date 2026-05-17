@@ -129,3 +129,39 @@ def test_save_downloads_non_empty_png(page: Page) -> None:
     download = download_info.value
     assert download.suggested_filename.endswith("-framed.png")
     assert download.path().stat().st_size > 0
+
+
+@pytest.mark.web
+def test_mobile_layout_keeps_preview_usable_and_save_clickable(page: Page) -> None:
+    page.set_viewport_size({"width": 390, "height": 844})
+    upload_test_image(page)
+
+    preview_box = page.get_by_test_id("preview-frame").bounding_box()
+    assert preview_box is not None
+    assert preview_box["width"] >= 320
+
+    page.get_by_test_id("save-button").scroll_into_view_if_needed()
+    save_box = page.get_by_test_id("save-button").bounding_box()
+    footer_box = page.locator("footer").bounding_box()
+    assert save_box is not None
+    assert footer_box is not None
+    assert save_box["y"] + save_box["height"] <= footer_box["y"]
+
+    save_center = {
+        "x": save_box["x"] + save_box["width"] / 2,
+        "y": save_box["y"] + save_box["height"] / 2,
+    }
+    assert page.evaluate(
+        """({ x, y }) => {
+            const element = document.elementFromPoint(x, y);
+            return Boolean(element && element.closest("#saveButton"));
+        }""",
+        save_center,
+    )
+
+    with page.expect_download() as download_info:
+        page.get_by_test_id("save-button").click()
+
+    download = download_info.value
+    assert download.suggested_filename.endswith("-framed.png")
+    assert download.path().stat().st_size > 0
