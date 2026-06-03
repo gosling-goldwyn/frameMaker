@@ -2,16 +2,47 @@ import re
 from pathlib import Path
 
 import pytest
-from playwright.sync_api import Page, expect
+from playwright.sync_api import Browser, Page, expect
 
 TEST_IMAGE = Path(__file__).resolve().parents[1] / "assets" / "test_image.png"
 RATIOS = ("1.000", "1.333", "1.414", "1.618", "1.732")
+DESKTOP_SAVE_STATUS = "保存時に保存先を選択します"
+MOBILE_SAVE_STATUS = (
+    "カメラロールに保存するには、Save後に画像を開いて長押しし、保存を選択してください。"
+    "OSダイアログの保存はファイルに保存されます。"
+)
 
 
 def upload_test_image(page: Page) -> None:
     page.get_by_test_id("input-file").set_input_files(str(TEST_IMAGE))
     expect(page.get_by_test_id("save-button")).to_be_enabled(timeout=15_000)
     expect(page.get_by_test_id("preview-image")).to_have_attribute("src", re.compile(r"^blob:"))
+
+
+@pytest.mark.web
+def test_save_status_defaults_to_desktop_copy(page: Page) -> None:
+    expect(page.get_by_test_id("save-status")).to_have_text(DESKTOP_SAVE_STATUS)
+
+
+@pytest.mark.web
+def test_save_status_uses_mobile_copy_for_mobile_user_agent(
+    browser: Browser,
+    static_server_url: str,
+) -> None:
+    context = browser.new_context(
+        user_agent=(
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) "
+            "AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 "
+            "Mobile/15E148 Safari/604.1"
+        ),
+        viewport={"width": 390, "height": 844},
+    )
+    page = context.new_page()
+    try:
+        page.goto(static_server_url + "/index.html")
+        expect(page.get_by_test_id("save-status")).to_have_text(MOBILE_SAVE_STATUS)
+    finally:
+        context.close()
 
 
 def output_canvas_info(page: Page) -> dict:

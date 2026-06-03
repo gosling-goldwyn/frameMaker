@@ -15,9 +15,30 @@ const state = {
 };
 
 const SIDE_MARGIN_RATIO = 0.309;
+const DESKTOP_SAVE_STATUS = "保存時に保存先を選択します";
+const MOBILE_SAVE_STATUS = "カメラロールに保存するには、Save後に画像を開いて長押しし、保存を選択してください。OSダイアログの保存はファイルに保存されます。";
 
 function hasPywebviewApi() {
     return Boolean(window.pywebview && window.pywebview.api);
+}
+
+function isMobileSaveContext() {
+    if (navigator.userAgentData && navigator.userAgentData.mobile) {
+        return true;
+    }
+
+    const userAgent = navigator.userAgent || "";
+    const platform = navigator.platform || "";
+    return /iPhone|iPad|iPod|Android|Mobile/i.test(userAgent)
+        || (platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function getInitialSaveStatus() {
+    return isMobileSaveContext() ? MOBILE_SAVE_STATUS : DESKTOP_SAVE_STATUS;
+}
+
+function resetSaveStatus() {
+    document.getElementById("save-status").innerText = getInitialSaveStatus();
 }
 
 async function loadImageSize(src) {
@@ -291,7 +312,7 @@ function renderPreview() {
 
     saveButton.disabled = !state.inputDataUrl;
     saveButton.innerText = "Save";
-    document.getElementById("save-status").innerText = "保存時に保存先を選択します";
+    resetSaveStatus();
 }
 
 document.getElementById("frame-ratio").addEventListener("input", validateFrameRatio);
