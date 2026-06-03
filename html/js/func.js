@@ -15,8 +15,9 @@ const state = {
 };
 
 const SIDE_MARGIN_RATIO = 0.309;
-const DESKTOP_SAVE_STATUS = "保存時に保存先を選択します";
-const MOBILE_SAVE_STATUS = "カメラロールに保存するには、Save後に画像を開いて長押しし、保存を選択してください。OSダイアログの保存はファイルに保存されます。";
+const SERVER_SAVE_NOTE = "サーバーに画像が保存されることはありません。";
+const DESKTOP_SAVE_STATUS = `保存時に保存先を選択します。${SERVER_SAVE_NOTE}`;
+const MOBILE_SAVE_STATUS = `カメラロールに保存するには、Save後に画像を開いて長押しし、保存を選択してください。OSダイアログの保存はファイルに保存されます。${SERVER_SAVE_NOTE}`;
 
 function hasPywebviewApi() {
     return Boolean(window.pywebview && window.pywebview.api);
