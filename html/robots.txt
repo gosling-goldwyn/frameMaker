@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://framemaker.poppoworks.dev/sitemap.xml

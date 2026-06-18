@@ -1,16 +1,42 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Frame Maker</title>
+    <title>FrameMaker | ブラウザで画像に余白フレームを追加</title>
+    <meta name="description"
+        content="FrameMaker は、画像に正方形、4:3、白銀比、黄金比などの余白フレームを追加し、SNS投稿画像、ブログ用画像、サムネイル、ポートフォリオ画像を整えるブラウザツールです。">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://framemaker.poppoworks.dev/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Poppoworks">
+    <meta property="og:title" content="FrameMaker | ブラウザで画像に余白フレームを追加">
+    <meta property="og:description" content="画像に余白フレームを追加し、投稿先や掲載先に合わせて比率と見た目を整えるブラウザツールです。">
+    <meta property="og:url" content="https://framemaker.poppoworks.dev/">
+    <meta name="twitter:card" content="summary">
     <link rel="icon"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%232a323c'/%3E%3Crect x='3' y='3' width='10' height='10' fill='none' stroke='%23ffffff' stroke-width='2'/%3E%3C/svg%3E">
     <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.23/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5840725185082524"
         crossorigin="anonymous"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "FrameMaker",
+            "url": "https://framemaker.poppoworks.dev/",
+            "applicationCategory": "MultimediaApplication",
+            "operatingSystem": "Web",
+            "description": "画像に余白フレームを追加し、比率、背景色、角丸、カラー帯を調整して保存できるブラウザツールです。",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "JPY"
+            }
+        }
+    </script>
     <style>
         #preview-frame {
             --frame-bg: #FFFFFF;
@@ -48,14 +74,38 @@
             display: grid;
             grid-template-columns: repeat(5, 1fr);
         }
+
+        .content-section {
+            max-width: 1120px;
+            margin: 0 auto;
+        }
     </style>
 </head>
 
 <body class="bg-base-200 text-base-content min-h-screen flex flex-col">
     <div class="navbar bg-neutral text-neutral-content shrink-0">
-        <h1 class="text-2xl" data-testid="app-title">Frame Maker</h1>
+        <div class="flex-1">
+            <h1 class="text-2xl" data-testid="app-title">FrameMaker</h1>
+        </div>
+        <div class="flex-none hidden sm:flex gap-4 text-sm">
+            <a class="link link-hover" href="https://poppoworks.dev/framemaker.html">About</a>
+            <a class="link link-hover" href="https://poppoworks.dev/privacy.html">Privacy</a>
+            <a class="link link-hover" href="https://poppoworks.dev/contact.html">Contact</a>
+        </div>
     </div>
     <main class="flex-1 p-4 md:p-8">
+        <section class="content-section mb-6">
+            <div class="prose max-w-none">
+                <p class="text-sm font-semibold text-primary mb-2">Browser image framing tool</p>
+                <h2 class="text-3xl md:text-4xl font-bold mb-3">画像を切り抜かず、余白で比率を整える</h2>
+                <p class="text-base-content/75">
+                    FrameMaker は、画像の外側に余白フレームを追加して、SNS投稿、ブログ用画像、YouTubeサムネイル、
+                    ポートフォリオ画像、スクリーンショット整理に使いやすい形へ整えるブラウザツールです。
+                    画像処理はブラウザ上で行い、通常の利用では加工対象の画像をサーバーへ送信しません。
+                </p>
+            </div>
+        </section>
+
         <section class="mb-4">
             <div class="container mx-auto">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-4">
@@ -151,9 +201,62 @@
 
 
         </section>
+        <section class="content-section mt-10 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <article class="card bg-base-100 shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title">使いどころ</h2>
+                    <p>SNS投稿画像、ブログのアイキャッチ、YouTubeサムネイル、作品一覧、アプリ画面のスクリーンショット整理に使えます。</p>
+                </div>
+            </article>
+            <article class="card bg-base-100 shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title">比率の選び方</h2>
+                    <p>正方形はSNS向け、4:3は説明画像向け、黄金比や平方根3は横長の見せ方に向いています。</p>
+                </div>
+            </article>
+            <article class="card bg-base-100 shadow-sm">
+                <div class="card-body">
+                    <h2 class="card-title">画像の扱い</h2>
+                    <p>選択した画像はブラウザ内でプレビューと保存を行います。Poppoworks側で画像を保存する設計ではありません。</p>
+                </div>
+            </article>
+        </section>
+
+        <section class="content-section mt-8">
+            <div class="collapse collapse-arrow bg-base-100">
+                <input type="radio" name="framemaker-faq" checked>
+                <div class="collapse-title text-xl font-medium">FrameMakerは無料で使えますか？</div>
+                <div class="collapse-content">
+                    <p>無料で利用できます。作成した画像は、元画像の権利や利用条件を確認したうえで使用してください。</p>
+                </div>
+            </div>
+            <div class="collapse collapse-arrow bg-base-100 mt-2">
+                <input type="radio" name="framemaker-faq">
+                <div class="collapse-title text-xl font-medium">広告はどの画面に表示されますか？</div>
+                <div class="collapse-content">
+                    <p>AdSenseの自動広告設定により、ページ本文や説明コンテンツの周辺に広告が表示される場合があります。画像の保存操作を妨げない配置になるよう、ページ構成を調整しています。</p>
+                </div>
+            </div>
+            <div class="collapse collapse-arrow bg-base-100 mt-2">
+                <input type="radio" name="framemaker-faq">
+                <div class="collapse-title text-xl font-medium">詳しい説明はどこで読めますか？</div>
+                <div class="collapse-content">
+                    <p><a class="link link-primary" href="https://poppoworks.dev/framemaker.html">PoppoworksのFrameMaker紹介ページ</a>で、用途、比率の使い分け、更新履歴を掲載しています。</p>
+                </div>
+            </div>
+        </section>
     </main>
     <footer class="footer bg-neutral text-neutral-content p-4 mt-4 shrink-0">
-        <p class="text-center">&copy; 2025-2026 gosling-goldwyn</p>
+        <div class="grid gap-1">
+            <p>&copy; 2025-2026 gosling-goldwyn</p>
+            <p class="text-sm">
+                <a class="link link-hover" href="https://poppoworks.dev/">Poppoworks</a>
+                /
+                <a class="link link-hover" href="https://poppoworks.dev/privacy.html">Privacy Policy</a>
+                /
+                <a class="link link-hover" href="https://poppoworks.dev/contact.html">Contact</a>
+            </p>
+        </div>
     </footer>
     <script src="./js/func.js"></script>
 </body>
