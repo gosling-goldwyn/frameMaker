@@ -29,6 +29,26 @@ def upload_opaque_test_image(page: Page, tmp_path: Path) -> None:
     expect(page.get_by_test_id("preview-image")).to_have_attribute("src", re.compile(r"^blob:"))
 
 
+def upload_color_band_test_image(page: Page, tmp_path: Path) -> None:
+    image_path = tmp_path / "color-bands.png"
+    image = Image.new("RGB", (500, 100))
+    bands = [
+        (0, 0, 255),
+        (255, 0, 0),
+        (0, 255, 0),
+        (255, 255, 0),
+        (0, 255, 255),
+    ]
+    for index, color in enumerate(bands):
+        for x in range(index * 100, (index + 1) * 100):
+            for y in range(100):
+                image.putpixel((x, y), color)
+    image.save(image_path)
+    page.get_by_test_id("input-file").set_input_files(str(image_path))
+    expect(page.get_by_test_id("save-button")).to_be_enabled(timeout=15_000)
+    expect(page.get_by_test_id("preview-image")).to_have_attribute("src", re.compile(r"^blob:"))
+
+
 @pytest.mark.web
 def test_save_status_defaults_to_desktop_copy(page: Page) -> None:
     expect(page.get_by_test_id("save-status")).to_have_text(DESKTOP_SAVE_STATUS)
@@ -170,6 +190,15 @@ def test_corner_radius_matches_preview_scale_in_output_canvas(page: Page, tmp_pa
     assert canvas["outputRadius"] > 80
     assert canvas["corner"][:3] == [255, 255, 255]
     assert canvas["insideTopEdge"][:3] == [220, 40, 40]
+
+
+@pytest.mark.web
+def test_maincolor_options_are_sorted_by_hsv(page: Page, tmp_path: Path) -> None:
+    upload_color_band_test_image(page, tmp_path)
+
+    labels = page.locator(".dynamic-color label").all_inner_texts()
+
+    assert labels == ["#ff0000", "#ffff00", "#00ff00", "#00ffff", "#0000ff"]
 
 
 @pytest.mark.web

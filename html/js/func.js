@@ -124,6 +124,49 @@ function rgbToHex(r, g, b) {
         .join("");
 }
 
+function rgbToHsv(r, g, b) {
+    const red = r / 255;
+    const green = g / 255;
+    const blue = b / 255;
+    const max = Math.max(red, green, blue);
+    const min = Math.min(red, green, blue);
+    const delta = max - min;
+    let hue = 0;
+
+    if (delta !== 0) {
+        if (max === red) {
+            hue = ((green - blue) / delta) % 6;
+        } else if (max === green) {
+            hue = (blue - red) / delta + 2;
+        } else {
+            hue = (red - green) / delta + 4;
+        }
+        hue *= 60;
+        if (hue < 0) hue += 360;
+    }
+
+    return {
+        h: hue,
+        s: max === 0 ? 0 : delta / max,
+        v: max,
+    };
+}
+
+function sortColorsByHsv(colors) {
+    return [...colors].sort((colorA, colorB) => {
+        const a = hexToRgb(colorA);
+        const b = hexToRgb(colorB);
+        const hsvA = rgbToHsv(a.r, a.g, a.b);
+        const hsvB = rgbToHsv(b.r, b.g, b.b);
+
+        return (
+            hsvA.h - hsvB.h ||
+            hsvA.s - hsvB.s ||
+            hsvA.v - hsvB.v
+        );
+    });
+}
+
 async function loadImageElement(src) {
     const image = new Image();
     image.src = src;
@@ -359,7 +402,7 @@ document.getElementById('inputpath').addEventListener('change', async (event) =>
     renderPreview();
 
     const colors = await getMainColors(inputdata);
-    state.mainColors = colors || [];
+    state.mainColors = sortColorsByHsv(colors || []);
 
     const colorOptions = document.getElementById('color-options');
     // Remove existing color options except for black and white
