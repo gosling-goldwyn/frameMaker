@@ -2,19 +2,29 @@ import re
 from pathlib import Path
 
 import pytest
+from PIL import Image
 from playwright.sync_api import Browser, Page, expect
 
 TEST_IMAGE = Path(__file__).resolve().parents[1] / "assets" / "test_image.png"
 RATIOS = ("1.000", "1.333", "1.414", "1.618", "1.732")
-DESKTOP_SAVE_STATUS = "保存時に保存先を選択します"
+SERVER_SAVE_NOTE = "サーバーに画像が保存されることはありません。"
+DESKTOP_SAVE_STATUS = f"保存時に保存先を選択します。{SERVER_SAVE_NOTE}"
 MOBILE_SAVE_STATUS = (
     "カメラロールに保存するには、Save後に画像を開いて長押しし、保存を選択してください。"
-    "OSダイアログの保存はファイルに保存されます。"
+    f"OSダイアログの保存はファイルに保存されます。{SERVER_SAVE_NOTE}"
 )
 
 
 def upload_test_image(page: Page) -> None:
     page.get_by_test_id("input-file").set_input_files(str(TEST_IMAGE))
+    expect(page.get_by_test_id("save-button")).to_be_enabled(timeout=15_000)
+    expect(page.get_by_test_id("preview-image")).to_have_attribute("src", re.compile(r"^blob:"))
+
+
+def upload_opaque_test_image(page: Page, tmp_path: Path) -> None:
+    image_path = tmp_path / "opaque-red.png"
+    Image.new("RGB", (2000, 2000), (220, 40, 40)).save(image_path)
+    page.get_by_test_id("input-file").set_input_files(str(image_path))
     expect(page.get_by_test_id("save-button")).to_be_enabled(timeout=15_000)
     expect(page.get_by_test_id("preview-image")).to_have_attribute("src", re.compile(r"^blob:"))
 
@@ -71,7 +81,7 @@ def output_canvas_info(page: Page) -> dict:
 def test_smoke_app_is_visible_without_pywebview(page: Page) -> None:
     assert page.evaluate("() => window.pywebview") is None
 
-    expect(page.get_by_test_id("app-title")).to_have_text("Frame Maker")
+    expect(page.get_by_test_id("app-title")).to_have_text("FrameMaker")
     expect(page.get_by_test_id("input-file")).to_be_visible()
     expect(page.get_by_test_id("preview-frame")).to_be_visible()
     expect(page.get_by_test_id("save-button")).to_be_visible()
@@ -131,6 +141,35 @@ def test_background_and_radius_are_reflected_in_canvas_pixels(page: Page) -> Non
     page.get_by_test_id("bg-maincolor-0").check()
     main_color_canvas = output_canvas_info(page)
     assert main_color_canvas["topLeft"][:3] != [255, 255, 255]
+
+
+@pytest.mark.web
+def test_corner_radius_matches_preview_scale_in_output_canvas(page: Page, tmp_path: Path) -> None:
+    upload_opaque_test_image(page, tmp_path)
+    page.get_by_test_id("corner-radius-slider").fill("80")
+
+    canvas = page.evaluate(
+        """async () => {
+            const canvas = await window.frameMakerWeb.createOutputCanvas();
+            const ctx = canvas.getContext("2d");
+            const previewImage = document.getElementById("preview-image");
+            const bounds = previewImage.getBoundingClientRect();
+            const outputRadius = 80 * Math.min(
+                canvas.width / bounds.width,
+                canvas.height / bounds.height
+            );
+            const insideX = Math.min(canvas.width - 1, Math.ceil(outputRadius) + 10);
+            return {
+                corner: Array.from(ctx.getImageData(0, 0, 1, 1).data),
+                insideTopEdge: Array.from(ctx.getImageData(insideX, 10, 1, 1).data),
+                outputRadius,
+            };
+        }"""
+    )
+
+    assert canvas["outputRadius"] > 80
+    assert canvas["corner"][:3] == [255, 255, 255]
+    assert canvas["insideTopEdge"][:3] == [220, 40, 40]
 
 
 @pytest.mark.web

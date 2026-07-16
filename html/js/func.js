@@ -152,6 +152,20 @@ function drawRoundedImage(ctx, image, x, y, width, height, radius) {
     ctx.restore();
 }
 
+function getOutputImageRadius(radius, sourceWidth, sourceHeight) {
+    const previewImage = document.getElementById("preview-image");
+    const previewBounds = previewImage ? previewImage.getBoundingClientRect() : null;
+    if (!previewBounds || previewBounds.width <= 0 || previewBounds.height <= 0) {
+        return radius;
+    }
+
+    const scale = Math.min(
+        sourceWidth / previewBounds.width,
+        sourceHeight / previewBounds.height,
+    );
+    return radius * scale;
+}
+
 function extractMainColorsFromCanvas(image) {
     const sampleCanvas = document.createElement("canvas");
     const maxSampleSize = 80;
@@ -236,7 +250,8 @@ async function createOutputCanvas() {
     const x = Math.floor((sideLength - sourceWidth) / 2);
     const y = Math.floor((sideLength - sourceHeight) / 2);
     if (radius > 0) {
-        drawRoundedImage(ctx, image, x, y, sourceWidth, sourceHeight, radius);
+        const outputRadius = getOutputImageRadius(radius, sourceWidth, sourceHeight);
+        drawRoundedImage(ctx, image, x, y, sourceWidth, sourceHeight, outputRadius);
     } else {
         ctx.drawImage(image, x, y, sourceWidth, sourceHeight);
     }
